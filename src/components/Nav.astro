@@ -1,4 +1,5 @@
 ---
+import { BASE } from '../config';
 /*
   Navigation principale
   - Desktop : tous les liens visibles en ligne
@@ -15,8 +16,8 @@ const currentPath = Astro.url.pathname;
     <!-- Liens gauche -->
     <div class="nav-left">
       <a
-        href={`${import.meta.env.BASE_URL}`}
-        class:list={["btn", { active: currentPath === `${import.meta.env.BASE_URL}` }]}
+        href={`${BASE}`}
+        class:list={["btn", { active: currentPath === `${BASE}` }]}
       >
         Réalisations
       </a>
@@ -34,8 +35,8 @@ const currentPath = Astro.url.pathname;
     <div class="nav-right">
       <span class="btn nav-disponible">· Disponible</span>
       <a
-        href={`${import.meta.env.BASE_URL}about`}
-        class:list={["btn", { active: currentPath === `${import.meta.env.BASE_URL}about/` || currentPath === `${import.meta.env.BASE_URL}about` }]}
+        href={`${BASE}about`}
+        class:list={["btn", { active: currentPath === `${BASE}about/` || currentPath === `${BASE}about` }]}
       >
         À propos
       </a>
@@ -59,7 +60,7 @@ const currentPath = Astro.url.pathname;
       <!-- Photo portrait -->
       <div class="nav-overlay-photo-wrapper">
         <img
-          src={`${import.meta.env.BASE_URL}images/global/portrait.webp`}
+          src={`${BASE}images/global/portrait.webp`}
           alt="Franck Chabin"
           class="nav-overlay-photo"
           width="120"
@@ -70,7 +71,7 @@ const currentPath = Astro.url.pathname;
 
       <!-- Liens principaux -->
       <div class="nav-overlay-links">
-        <a href={`${import.meta.env.BASE_URL}`} class="btn nav-overlay-btn">Réalisations</a>
+        <a href={`${BASE}`} class="btn nav-overlay-btn">Réalisations</a>
         <a
           href="https://www.are.na/l-homme-pizza-franck/channels"
           target="_blank"
@@ -79,7 +80,7 @@ const currentPath = Astro.url.pathname;
         >
           Are.na
         </a>
-        <a href={`${import.meta.env.BASE_URL}about`} class="btn nav-overlay-btn">À propos</a>
+        <a href={`${BASE}about`} class="btn nav-overlay-btn">À propos</a>
       </div>
 
       <!-- Nom — bas de l'overlay, serif italic -->

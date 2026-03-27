@@ -1,4 +1,5 @@
 ---
+import { BASE } from '../config';
 /*
   PAGE D'ACCUEIL
   ==============
@@ -20,11 +21,10 @@
 import Base from '../layouts/Base.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 
-const base = import.meta.env.BASE_URL;
 
 // Les 18 images de la série hero (pour le trail)
 const trailImages = Array.from({ length: 18 }, (_, i) =>
-  `${base}images/hover/hero-hover-${String(i + 1).padStart(3, '0')}.webp`
+  `${BASE}images/hover/hero-hover-${String(i + 1).padStart(3, '0')}.webp`
 );
 
 const projects = [
@@ -38,19 +38,19 @@ const projects = [
     title: 'Golosino',
     slug: 'golosino',
     tags: ['Identité visuelle', 'IA'],
-    image: `${base}images/projects/golosino/©franckchabin_GOLOSINO_01.webp`,
+    image: `${BASE}images/projects/golosino/©franckchabin_GOLOSINO_01.webp`,
   },
   {
     title: 'Ticket Culture',
     slug: 'tiket-culture',
     tags: ['Object éditorial', 'Iconographie', 'Rédaction'],
-    image: `${base}images/projects/ticket-culture/©franckchabin_tiket-culture_Thumbnail.webp`,
+    image: `${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_Thumbnail.webp`,
   },
   {
     title: 'Fisheye',
     slug: 'fisheye',
     tags: ['Object éditorial', 'Direction artistique', 'Motion design'],
-    image: `${base}images/projects/fisheye/©franckchabin_Fisheye_02.webp`,
+    image: `${BASE}images/projects/fisheye/©franckchabin_Fisheye_02.webp`,
   },
   {
     title: 'Anemo',
@@ -68,7 +68,7 @@ const projects = [
     title: 'Vittorine',
     slug: 'vittorine',
     tags: ['Object éditorial', 'Dessin de caractères'],
-    image: `${base}images/projects/vittorine/©franckchabin_Vittorine_01.webp`,
+    image: `${BASE}images/projects/vittorine/©franckchabin_Vittorine_01.webp`,
   },
 ];
 ---
@@ -99,7 +99,7 @@ const projects = [
       <!-- Photo flush top, taille réduite -->
       <div class="hero-photo-wrapper">
         <img
-          src={`${import.meta.env.BASE_URL}images/global/portrait.webp`}
+          src={`${BASE}images/global/portrait.webp`}
           alt="Franck Chabin"
           class="hero-photo"
           width="140"

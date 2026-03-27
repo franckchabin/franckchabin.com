@@ -1,4 +1,5 @@
 ---
+import { BASE } from '../config';
 /*
   PAGE PROJET : 75000
   ==================
@@ -31,7 +32,7 @@ import Project from '../layouts/Project.astro';
 
   <!-- Image pleine largeur : vue des cartes -->
   <img
-    src={`${import.meta.env.BASE_URL}images/projects/75000/©franckchabin_75000_04.webp`}
+    src={`${BASE}images/projects/75000/©franckchabin_75000_04.webp`}
     alt="Vue d'ensemble des cartes 75000 colorées"
     loading="lazy"
   />
@@ -44,7 +45,7 @@ import Project from '../layouts/Project.astro';
 
   <!-- Détail des cartes -->
   <img
-    src={`${import.meta.env.BASE_URL}images/projects/75000/©franckchabin_75000_05.webp`}
+    src={`${BASE}images/projects/75000/©franckchabin_75000_05.webp`}
     alt="Détails des cartes de rues parisiennes"
     loading="lazy"
   />
@@ -58,12 +59,12 @@ import Project from '../layouts/Project.astro';
   <!-- Deux images côte à côte -->
   <div class="gallery-row">
     <img
-      src={`${import.meta.env.BASE_URL}images/projects/75000/©franckchabin_75000_06.webp`}
+      src={`${BASE}images/projects/75000/©franckchabin_75000_06.webp`}
       alt="Carte de rue en gros plan"
       loading="lazy"
     />
     <img
-      src={`${import.meta.env.BASE_URL}images/projects/75000/©franckchabin_75000_07.webp`}
+      src={`${BASE}images/projects/75000/©franckchabin_75000_07.webp`}
       alt="Boîtier du jeu 75000"
       loading="lazy"
     />
@@ -72,7 +73,7 @@ import Project from '../layouts/Project.astro';
   <!-- Boîtier sur fond clair -->
   <div class="gallery-bg" style="background-color: #f5f5f5;">
     <img
-      src={`${import.meta.env.BASE_URL}images/projects/75000/©franckchabin_75000_08.webp`}
+      src={`${BASE}images/projects/75000/©franckchabin_75000_08.webp`}
       alt="Lecteur de cartes et boîtier 75000"
       loading="lazy"
       style="max-width: 80%;"

@@ -16,7 +16,7 @@ interface Props {
 const { title, slug, tags, image, video } = Astro.props;
 ---
 
-<a href={`/${slug}`} class="project-card">
+<a href={`${import.meta.env.BASE_URL}${slug}`} class="project-card">
   <div class="project-card-media">
     {video ? (
       <video data-src={video} autoplay loop muted playsinline preload="none" class="project-card-visual" />

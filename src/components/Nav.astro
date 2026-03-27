@@ -15,8 +15,8 @@ const currentPath = Astro.url.pathname;
     <!-- Liens gauche -->
     <div class="nav-left">
       <a
-        href="/"
-        class:list={["btn", { active: currentPath === "/" }]}
+        href={`${import.meta.env.BASE_URL}`}
+        class:list={["btn", { active: currentPath === `${import.meta.env.BASE_URL}` }]}
       >
         Réalisations
       </a>
@@ -34,8 +34,8 @@ const currentPath = Astro.url.pathname;
     <div class="nav-right">
       <span class="btn nav-disponible">· Disponible</span>
       <a
-        href="/about"
-        class:list={["btn", { active: currentPath === "/about/" || currentPath === "/about" }]}
+        href={`${import.meta.env.BASE_URL}about`}
+        class:list={["btn", { active: currentPath === `${import.meta.env.BASE_URL}about/` || currentPath === `${import.meta.env.BASE_URL}about` }]}
       >
         À propos
       </a>
@@ -70,7 +70,7 @@ const currentPath = Astro.url.pathname;
 
       <!-- Liens principaux -->
       <div class="nav-overlay-links">
-        <a href="/" class="btn nav-overlay-btn">Réalisations</a>
+        <a href={`${import.meta.env.BASE_URL}`} class="btn nav-overlay-btn">Réalisations</a>
         <a
           href="https://www.are.na/l-homme-pizza-franck/channels"
           target="_blank"
@@ -79,7 +79,7 @@ const currentPath = Astro.url.pathname;
         >
           Are.na
         </a>
-        <a href="/about" class="btn nav-overlay-btn">À propos</a>
+        <a href={`${import.meta.env.BASE_URL}about`} class="btn nav-overlay-btn">À propos</a>
       </div>
 
       <!-- Nom — bas de l'overlay, serif italic -->

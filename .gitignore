@@ -11,6 +11,11 @@ dist/
 # Assets sources (hébergés ailleurs)
 _ASSET/
 
+# Vidéos (trop lourdes pour GitHub)
+public/videos/
+*.mp4
+*.mov
+
 # Fichiers système
 .DS_Store
 Thumbs.db

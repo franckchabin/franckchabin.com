@@ -1,0 +1,43 @@
+---
+/*
+  PAGE PROJET : Mémoire
+  Typographes, créateurs de caractères et typodiversité.
+  Rédaction et objet éditorial.
+*/
+import Project from '../layouts/Project.astro';
+---
+
+<Project
+  title="Mémoire"
+  description="Mémoire de recherche consacré aux typographes, créateurs de caractères et à la typodiversité. Ce projet éditorial explore les enjeux de la diversité typographique à travers une rédaction approfondie et un objet d'édition soigné."
+  tags={["Rédaction", "Object éditorial"]}
+  nextProject={{ title: "Vittorine", slug: "vittorine" }}
+>
+
+  <!-- Vidéo de présentation -->
+  <video
+    data-src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1720744642/%C2%A9franckchabin_TCCT_01-2.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img src="/images/projects/memoire/©franckchabin_TCCT_02.webp" alt="Mémoire — couverture" loading="lazy" />
+
+  <img src="/images/projects/memoire/©franckchabin_TCCT_03.webp" alt="Mémoire — pages intérieures" loading="lazy" />
+
+  <div class="gallery-row">
+    <img src="/images/projects/memoire/©franckchabin_TCCT_04.webp" alt="Mémoire — détail typographique 1" loading="lazy" />
+    <img src="/images/projects/memoire/©franckchabin_TCCT_05.webp" alt="Mémoire — détail typographique 2" loading="lazy" />
+  </div>
+
+  <img src="/images/projects/memoire/©franckchabin_TCCT_06.webp" alt="Mémoire — mise en page" loading="lazy" />
+
+  <img src="/images/projects/memoire/©franckchabin_TCCT_07.webp" alt="Mémoire — vue d'ensemble" loading="lazy" />
+
+  <div class="gallery-row">
+    <img src="/images/projects/memoire/©franckchabin_TCCT_08.webp" alt="Mémoire — détail 3" loading="lazy" />
+    <img src="/images/projects/memoire/©franckchabin_TCCT_09.webp" alt="Mémoire — détail 4" loading="lazy" />
+  </div>
+
+  <img src="/images/projects/memoire/©franckchabin_TCCT_10.webp" alt="Mémoire — conclusion" loading="lazy" />
+
+</Project>

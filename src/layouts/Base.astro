@@ -1,0 +1,87 @@
+---
+/*
+  Layout de base — enveloppe toutes les pages
+  Inclut : <head>, polices, styles globaux, navigation
+
+  Props :
+  - title : titre de la page (apparaît dans l'onglet du navigateur)
+  - description : description pour le SEO
+*/
+
+import Nav from '../components/Nav.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  loadGsap?: boolean; // charger GSAP uniquement sur les pages qui en ont besoin
+}
+
+const {
+  title,
+  description = "Franck Chabin — Créatif indépendant basé à Paris. Direction artistique, objets d'édition, identités visuelles, dessin de caractères, interfaces web.",
+  loadGsap = false,
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+
+  <!-- SEO -->
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="fr_FR" />
+
+  <!-- Préchargement police custom (évite le flash FOUT) -->
+  <link rel="preload" as="font" type="font/woff" href="/fonts/maria-unconnected.woff" crossorigin />
+
+  <!-- Polices Google Fonts — display=block évite le flash de substitution -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=block"
+    rel="stylesheet"
+  />
+
+  <!-- GSAP — uniquement sur les pages qui en ont besoin (ex: homepage) -->
+  {loadGsap && <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>}
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <title>{title}</title>
+</head>
+<body>
+  <Nav />
+  <main>
+    <slot />
+  </main>
+  <script>
+    // Lazy-load des vidéos autoplay — évite le chargement Cloudinary inutile
+    // Les vidéos doivent avoir data-src au lieu de src (ou on les intercepte ici)
+    document.addEventListener('DOMContentLoaded', () => {
+      const videos = Array.from(document.querySelectorAll('video[data-src]')) as HTMLVideoElement[];
+      if (!videos.length) return;
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const v = e.target as HTMLVideoElement;
+            if (v.dataset.src) {
+              v.src = v.dataset.src;
+              v.load();
+              v.play().catch(() => {});
+            }
+            io.unobserve(v);
+          }
+        });
+      }, { rootMargin: '300px', threshold: 0 });
+      videos.forEach(v => io.observe(v));
+    });
+  </script>
+</body>
+</html>

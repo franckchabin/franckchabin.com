@@ -1,0 +1,83 @@
+---
+/*
+  Carte projet — grille homepage
+  Aucun effet de hover, zoom, ou halo.
+  Les tags sont passifs (classe .tag).
+*/
+
+interface Props {
+  title: string;
+  slug: string;
+  tags: string[];
+  image?: string;
+  video?: string;
+}
+
+const { title, slug, tags, image, video } = Astro.props;
+---
+
+<a href={`/${slug}`} class="project-card">
+  <div class="project-card-media">
+    {video ? (
+      <video data-src={video} autoplay loop muted playsinline preload="none" class="project-card-visual" />
+    ) : image ? (
+      <img src={image} alt={`Projet ${title}`} loading="lazy" class="project-card-visual" />
+    ) : null}
+  </div>
+
+  <div class="project-card-info">
+    <h3 class="project-card-title">{title}</h3>
+    <div class="project-card-tags">
+      {tags.map(tag => <span class="tag">{tag}</span>)}
+    </div>
+  </div>
+</a>
+
+<style>
+  .project-card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .project-card-media {
+    width: 100%;
+  }
+
+  .project-card-visual {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .project-card-info {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.75rem;
+    /* Pas de flex-wrap : titre et tags toujours sur la même ligne */
+  }
+
+  .project-card-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+    font-weight: normal;
+    font-style: normal;
+    /* Permet au titre de rétrécir si la carte est étroite */
+    min-width: 0;
+    flex: 1;
+  }
+
+  .project-card-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    /* Les tags ne se compriment pas */
+    flex-shrink: 0;
+  }
+
+  .project-card-tags .tag {
+    font-size: 0.65rem;
+  }
+</style>

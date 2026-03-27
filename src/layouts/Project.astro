@@ -1,0 +1,208 @@
+---
+/*
+  LAYOUT PROJET
+  Structure commune à toutes les pages projet :
+  1. Titre en grand
+  2. Bloc description (texte + métadonnées latérales)
+  3. Tags
+  4. Galerie de médias (images, vidéos, embeds) — via <slot />
+  5. Navigation vers le projet suivant
+
+  Props :
+  - title : nom du projet
+  - description : texte descriptif du projet
+  - tags : liste de catégories
+  - sideInfo : informations latérales (ex: polices utilisées)
+  - nextProject : { title, slug } du projet suivant
+*/
+
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  tags: string[];
+  sideInfo?: string;
+  nextProject?: {
+    title: string;
+    slug: string;
+  };
+}
+
+const { title, description, tags, sideInfo, nextProject } = Astro.props;
+---
+
+<Base title={`${title} — Franck Chabin`} description={description}>
+  <article class="project">
+
+    <!-- Titre -->
+    <header class="project-header container">
+      <h1 class="project-title">{title}</h1>
+    </header>
+
+    <!-- Description + infos latérales -->
+    <section class="project-intro container">
+      {sideInfo && (
+        <aside class="project-side-info">
+          <Fragment set:html={sideInfo} />
+        </aside>
+      )}
+      <div class="project-description">
+        <p>{description}</p>
+        <div class="project-tags">
+          {tags.map(tag => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Galerie (contenu libre via slot) -->
+    <section class="project-gallery container">
+      <slot />
+    </section>
+
+    <!-- Navigation vers le projet suivant -->
+    {nextProject && (
+      <nav class="project-next container" aria-label="Projet suivant">
+        <a href={`/${nextProject.slug}`} class="project-next-link">
+          <span class="project-next-label">projet suivant →</span>
+          <span class="project-next-title">{nextProject.title}</span>
+        </a>
+      </nav>
+    )}
+
+  </article>
+</Base>
+
+<style>
+  .project {
+    padding-bottom: var(--space-2xl);
+  }
+
+  /* --- Header --- */
+  .project-header {
+    /* offset nav fixe + espace interne */
+    padding-top: calc(var(--nav-height) + var(--space-md));
+    padding-bottom: var(--space-lg);
+  }
+
+  .project-title {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  /* --- Introduction (description + sidebar) --- */
+  .project-intro {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-lg);
+  }
+
+  .project-side-info {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
+  }
+
+  .project-description p {
+    font-size: clamp(1rem, 1.8vw, 1.25rem);
+    line-height: 1.7;
+    /* max-width supprimé — pleine largeur */
+  }
+
+  .project-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: var(--space-md);
+  }
+
+  /* --- Galerie --- */
+  .project-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  /* Les images dans la galerie */
+  .project-gallery :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-card);
+  }
+
+  .project-gallery :global(video) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-card);
+  }
+
+  /* Layout pour les images côte à côte */
+  .project-gallery :global(.gallery-row) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+
+  .project-gallery :global(.gallery-full) {
+    width: 100%;
+  }
+
+  /* Image avec fond coloré */
+  .project-gallery :global(.gallery-bg) {
+    padding: var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-card);
+  }
+
+  /* --- Navigation projet suivant --- */
+  .project-next {
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .project-next-link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    transition: opacity var(--transition-fast);
+  }
+
+  .project-next-link:hover {
+    opacity: 0.6;
+  }
+
+  .project-next-label {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+  }
+
+  .project-next-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-style: italic;
+  }
+
+  /* --- Responsive desktop --- */
+  @media (min-width: 768px) {
+    .project-intro {
+      grid-template-columns: 250px 1fr;
+      gap: var(--space-xl);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .project-header {
+      padding-top: var(--space-lg);
+    }
+  }
+</style>

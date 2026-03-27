@@ -1,0 +1,278 @@
+---
+/*
+  PAGE D'ACCUEIL
+  ==============
+  Structure :
+  1. HERO (100dvh - hauteur nav) — plein écran
+     ├── Photo flush top, taille réduite
+     ├── Zone vide centrale = zone d'animation "image trail"
+     └── Texte intro (serif regular) + tagline (serif italic) en bas
+  2. GRILLE PROJETS — visible au scroll
+
+  Animation hero :
+  Inspirée du code original (Anim_hero_44).
+  Quand la souris parcourt plus de N pixels dans la zone hero,
+  une image apparaît à la position du curseur puis s'efface.
+  L'animation est un layer de FOND (z-index le plus bas).
+  Blur désactivé par défaut (contrôlable via --blur-enabled).
+*/
+
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+
+// Les 18 images de la série hero (pour le trail)
+const trailImages = Array.from({ length: 18 }, (_, i) =>
+  `/images/hover/hero-hover-${String(i + 1).padStart(3, '0')}.webp`
+);
+
+const projects = [
+  {
+    title: '75000',
+    slug: '75000',
+    tags: ['Object éditorial', '3D'],
+    video: 'https://res.cloudinary.com/db5vnijzw/video/upload/v1719967574/%C2%A9franckchabin_75000_cards_animation_1920x1280_1.mp4',
+  },
+  {
+    title: 'Golosino',
+    slug: 'golosino',
+    tags: ['Identité visuelle', 'IA'],
+    image: '/images/projects/golosino/©franckchabin_GOLOSINO_01.webp',
+  },
+  {
+    title: 'Ticket Culture',
+    slug: 'tiket-culture',
+    tags: ['Object éditorial', 'Iconographie', 'Rédaction'],
+    image: '/images/projects/ticket-culture/©franckchabin_tiket-culture_Thumbnail.webp',
+  },
+  {
+    title: 'Fisheye',
+    slug: 'fisheye',
+    tags: ['Object éditorial', 'Direction artistique', 'Motion design'],
+    image: '/images/projects/fisheye/©franckchabin_Fisheye_02.webp',
+  },
+  {
+    title: 'Anemo',
+    slug: 'anemo',
+    tags: ["Conception d'interface", '3D'],
+    video: 'https://res.cloudinary.com/db5vnijzw/video/upload/v1719967321/%C2%A9franckchabin_Anemo_01_1280.mp4',
+  },
+  {
+    title: 'Mémoire',
+    slug: 'typographes-createurs-de-caracteres-et-typodiversite',
+    tags: ['Rédaction', 'Object éditorial'],
+    video: 'https://res.cloudinary.com/dqjhw8zd6/video/upload/v1720744642/%C2%A9franckchabin_TCCT_01-2.mp4',
+  },
+  {
+    title: 'Vittorine',
+    slug: 'vittorine',
+    tags: ['Object éditorial', 'Dessin de caractères'],
+    image: '/images/projects/vittorine/©franckchabin_Vittorine_01.webp',
+  },
+];
+---
+
+<Base title="Franck Chabin" loadGsap={true}>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="hero">
+
+    <!--
+      Images du trail — layer de FOND (z-index 0).
+      Derrière le contenu, la photo, les boutons, tout.
+    -->
+    <div class="hero-trail" aria-hidden="true">
+      {trailImages.map((src, i) => (
+        <img
+          src={src}
+          alt=""
+          class="hero-trail-img"
+          draggable="false"
+        />
+      ))}
+    </div>
+
+    <!-- Contenu visible — AU-DESSUS de l'animation -->
+    <div class="hero-content">
+
+      <!-- Photo flush top, taille réduite -->
+      <div class="hero-photo-wrapper">
+        <img
+          src="/images/global/portrait.webp"
+          alt="Franck Chabin"
+          class="hero-photo"
+          width="140"
+          height="140"
+          draggable="false"
+        />
+      </div>
+
+      <!-- Espace vide central — la souris ici déclenche le trail -->
+      <div class="hero-spacer"></div>
+
+      <!-- Texte en bas du hero -->
+      <div class="hero-text">
+        <p class="hero-intro">
+          Créatif indépendant basé à Paris.<sup>(fr)</sup>
+          Je me passionne pour la conception et l'exécution de projets graphiques,
+          dont mes domaines d'expertise incluent la création
+          d'<span class="u">objets d'édition</span>,
+          d'<span class="u">identités visuelles</span>,
+          de <span class="u">dessin de caractères</span>,
+          et d'<span class="u">interface Web</span>.
+        </p>
+        <p class="tagline">
+          Raconter une histoire par la couleur et la forme
+          pour faire sourire les yeux de son public.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== GRILLE PROJETS ===== -->
+  <section class="projects-section">
+    <div class="container">
+      <div class="projects-grid">
+        {projects.map(project => (
+          <ProjectCard
+            title={project.title}
+            slug={project.slug}
+            tags={project.tags}
+            image={project.image}
+            video={project.video}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+</Base>
+
+<style>
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    min-height: 100dvh;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  /* --- Animation trail = FOND (z-index le plus bas) --- */
+  .hero-trail {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .hero-trail-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+
+  /* --- Contenu du hero — AU-DESSUS du trail --- */
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.2rem var(--gutter) 1.2rem;
+    pointer-events: none;
+  }
+
+  .hero-photo-wrapper,
+  .hero-text {
+    pointer-events: auto;
+  }
+
+  /* --- Photo — réduite, flush top --- */
+  .hero-photo-wrapper {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .hero-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* --- Espace central (s'étire pour remplir) --- */
+  .hero-spacer {
+    flex: 1;
+    min-height: 60px;
+  }
+
+  /* --- Texte hero --- */
+  .hero-text {
+    width: 100%;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* Intro = Instrument Serif REGULAR */
+  .hero-intro {
+    font-family: var(--font-serif);
+    font-style: normal;
+    font-weight: normal;
+    font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+    line-height: 1.35;
+    margin-bottom: var(--space-md);
+    hyphens: none;
+    -webkit-hyphens: none;
+    text-wrap: balance;
+  }
+
+  .hero-intro sup {
+    font-size: 0.6em;
+    vertical-align: super;
+  }
+
+  /* Soulignement léger sur les mots clés */
+  .u {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  /* ===== GRILLE PROJETS ===== */
+  .projects-section {
+    padding: var(--space-lg) 0 var(--space-2xl);
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  @media (min-width: 768px) {
+    .projects-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-sm);
+    }
+    .hero-photo-wrapper {
+      width: 140px;
+      height: 140px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-photo-wrapper { width: 150px; height: 150px; }
+  }
+</style>
+
+<script src="../scripts/trail.ts"></script>

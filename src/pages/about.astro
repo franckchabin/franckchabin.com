@@ -1,0 +1,140 @@
+---
+/*
+  PAGE À PROPOS
+  Structure en deux colonnes :
+  - Gauche : contact + liens
+  - Droite : services + logiciels
+  Liens = .btn (interactifs), catégories = .tag (passifs)
+*/
+
+import Base from '../layouts/Base.astro';
+
+const services = [
+  'Direction artistique 360',
+  "Objets d'édition",
+  'Identités visuelles',
+  'Dessin de caractères',
+  "Conception d'interfaces Web",
+  'Motion design',
+];
+
+const software = [
+  'Photoshop',
+  'Illustrator',
+  'InDesign',
+  'Figma',
+  'Webflow',
+  'After Effect',
+  'Premiere Pro',
+  'Glyphs 3',
+  'Cinema 4D',
+  'Octane Render',
+];
+---
+
+<Base title="À propos — Franck Chabin">
+  <section class="about">
+    <div class="container">
+      <div class="about-grid">
+
+        <!-- Colonne gauche : contact -->
+        <div class="about-left">
+          <div class="about-block">
+            <h2 class="about-heading">On travaille ensemble ?</h2>
+            <a href="mailto:franck.chabin@icloud.com" class="btn about-email">
+              franck.chabin@icloud.com
+            </a>
+          </div>
+
+          <div class="about-block">
+            <h2 class="about-heading">Liens</h2>
+            <div class="about-links">
+              <a href="/cv.pdf" target="_blank" class="btn">CV</a>
+              <a href="https://www.linkedin.com/in/franckchabin/" target="_blank" rel="noopener noreferrer" class="btn">LinkedIn</a>
+              <a href="https://www.behance.net/franckchabin" target="_blank" rel="noopener noreferrer" class="btn">Behance</a>
+            </div>
+          </div>
+
+          <p class="about-copyright">&copy;franckchabin{new Date().getFullYear()} Tous droits réservés</p>
+        </div>
+
+        <!-- Colonne droite : services et outils -->
+        <div class="about-right">
+          <div class="about-block">
+            <h2 class="about-heading">Services</h2>
+            <div class="about-tags">
+              {services.map(s => <span class="tag">{s}</span>)}
+            </div>
+          </div>
+
+          <div class="about-block">
+            <h2 class="about-heading">Software</h2>
+            <div class="about-tags">
+              {software.map(s => <span class="tag">{s}</span>)}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about {
+    padding: var(--space-xl) 0 var(--space-2xl);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+
+  .about-block {
+    margin-bottom: var(--space-xl);
+  }
+
+  .about-heading {
+    font-family: var(--font-serif);
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    font-weight: normal;
+    font-style: italic;
+    margin-bottom: var(--space-sm);
+  }
+
+  .about-email {
+    font-size: 0.75rem;
+  }
+
+  .about-links {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .about-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .about-copyright {
+    font-size: 0.8rem;
+    color: var(--color-text-light);
+    margin-top: var(--space-xl);
+  }
+
+  /* Desktop : 2 colonnes */
+  @media (min-width: 768px) {
+    .about-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+    }
+
+    .about-left {
+      border-right: 1px solid var(--color-border);
+      padding-right: var(--space-xl);
+    }
+  }
+</style>

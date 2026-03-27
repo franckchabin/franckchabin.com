@@ -59,7 +59,7 @@ const currentPath = Astro.url.pathname;
       <!-- Photo portrait -->
       <div class="nav-overlay-photo-wrapper">
         <img
-          src="/images/global/portrait.webp"
+          src={`${import.meta.env.BASE_URL}images/global/portrait.webp`}
           alt="Franck Chabin"
           class="nav-overlay-photo"
           width="120"

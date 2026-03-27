@@ -2,8 +2,8 @@ import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   devToolbar: { enabled: false },
-  // GitHub Pages: remplace par ton URL si besoin
-  site: 'https://franckchabin.com',
+  site: 'https://franckchabin.github.io',
+  base: '/franckchabin.com',
   // Génère des fichiers HTML statiques purs
   output: 'static',
   build: {

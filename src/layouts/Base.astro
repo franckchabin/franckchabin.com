@@ -56,15 +56,7 @@ const {
   <link rel="icon" type="image/svg+xml" href={`${BASE}favicon.svg`} />
 
   <title>{title}</title>
-  <style is:global define:vars={{ fontUrl: `${BASE}fonts/maria-unconnected.woff` }}>
-    @font-face {
-      font-family: 'Maria Unconnected';
-      src: url(var(--fontUrl)) format('woff');
-      font-weight: normal;
-      font-style: normal;
-      font-display: block;
-    }
-  </style>
+  <Fragment set:html={`<style>@font-face{font-family:'Maria Unconnected';src:url('${BASE}fonts/maria-unconnected.woff') format('woff');font-weight:normal;font-style:normal;font-display:block;}</style>`} />
 </head>
 <body>
   <Nav />

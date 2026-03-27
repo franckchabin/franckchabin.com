@@ -147,6 +147,14 @@ function startDesktop(gsap: any) {
     });
     hero.addEventListener('mouseenter', () => { deskRunning=true; sm={...mouse}; last={...mouse}; loop(); });
     hero.addEventListener('mouseleave', () => { deskRunning=false; });
+
+    // Pause l'animation quand la souris est sur le texte (hero-content)
+    const heroContent = hero.querySelector('.hero-content');
+    if (heroContent) {
+      heroContent.addEventListener('mouseenter', () => { deskRunning = false; });
+      heroContent.addEventListener('mouseleave', () => { deskRunning = true; last = {...mouse}; loop(); });
+    }
+
     deskBound = true;
   }
   function loop() {

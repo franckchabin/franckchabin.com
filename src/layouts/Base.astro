@@ -55,6 +55,15 @@ const {
   <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
 
   <title>{title}</title>
+  <style is:global define:vars={{ fontUrl: `${import.meta.env.BASE_URL}fonts/maria-unconnected.woff` }}>
+    @font-face {
+      font-family: 'Maria Unconnected';
+      src: url(var(--fontUrl)) format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: block;
+    }
+  </style>
 </head>
 <body>
   <Nav />

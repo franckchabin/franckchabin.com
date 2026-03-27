@@ -3,14 +3,7 @@
    Styles globaux
    ============================================ */
 
-/* --- Polices custom --- */
-@font-face {
-  font-family: 'Maria Unconnected';
-  src: url('/fonts/maria-unconnected.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-  font-display: block; /* block = invisible pendant le chargement, pas de flash visible */
-}
+/* @font-face déplacé dans Base.astro pour supporter BASE_URL dynamique */
 
 /* --- Variables CSS --- */
 :root {

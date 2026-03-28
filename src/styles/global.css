@@ -71,7 +71,7 @@ body {
   font-weight: 400;
   color: var(--color-text);
   background-color: var(--color-bg);
-  line-height: 1.6;
+  line-height: 1.5;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
@@ -109,8 +109,8 @@ h2 {
 /* Corps de texte — minimum 16px (standard web) */
 p {
   font-family: var(--font-body);
-  font-size: clamp(1rem, 1.2vw, 1.15rem);
-  line-height: 1.7;
+  font-size: clamp(1rem, 1.2vw, 1.2rem);
+  line-height: 1.55;
   color: var(--color-text);
   hyphens: auto;
   -webkit-hyphens: auto;

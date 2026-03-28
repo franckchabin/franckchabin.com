@@ -125,7 +125,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
   .project-description p {
     font-family: var(--font-serif); /* Instrument Serif comme sur Webflow */
     font-size: clamp(1.25rem, 2vw, 1.6rem); /* mobile: 20px, desktop: jusqu'à 25.6px */
-    line-height: 1.6;
+    line-height: 1.5;
     hyphens: none;
     -webkit-hyphens: none;
   }
@@ -199,9 +199,9 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
       order: -1;
     }
 
-    /* Galerie décalée — s'aligne avec la colonne droite */
+    /* Galerie décalée — s'aligne avec la colonne droite (gutter inclus) */
     .project-gallery {
-      padding-left: calc(250px + var(--space-xl));
+      padding-left: calc(var(--gutter) + 250px + var(--space-xl));
     }
   }
 

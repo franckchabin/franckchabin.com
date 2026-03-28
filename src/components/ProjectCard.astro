@@ -51,13 +51,19 @@ const { title, slug, tags, image, video } = Astro.props;
     display: block;
   }
 
-  /* Titre au-dessus, tags en-dessous ferrés à droite.
-     Layout en colonne à toutes les tailles — évite le chevauchement
-     quand le titre est long et les tags nombreux. */
+  /*
+     Desktop : titre à gauche, tags à droite, même ligne.
+     Si manque de place : tags passent en-dessous, alignés à gauche.
+     flex-grow:1 sur le titre pousse les tags à droite quand ils
+     tiennent sur la même ligne. flex-wrap:wrap les fait passer
+     à la ligne suivante (alignés à gauche par défaut) si nécessaire.
+  */
   .project-card-info {
     display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    column-gap: 0.75rem;
+    row-gap: 0.3rem;
     padding-top: 0.75rem;
   }
 
@@ -67,13 +73,15 @@ const { title, slug, tags, image, video } = Astro.props;
     font-weight: normal;
     font-style: normal;
     line-height: 1.1;
+    flex: 1 0 auto; /* grandit pour remplir, ne rétrécit pas, basis = largeur du texte */
   }
 
   .project-card-tags {
     display: flex;
     gap: 0.35rem;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    /* Pas de margin-left: auto ni justify-content: flex-end —
+       quand les tags wrappent, ils sont naturellement à gauche */
   }
 
   .project-card-tags .tag {

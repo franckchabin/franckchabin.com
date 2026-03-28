@@ -106,10 +106,10 @@ h2 {
   font-style: italic;
 }
 
-/* Corps de texte */
+/* Corps de texte — minimum 16px (standard web) */
 p {
   font-family: var(--font-body);
-  font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
   line-height: 1.7;
   color: var(--color-text);
   hyphens: auto;

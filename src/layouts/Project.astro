@@ -38,13 +38,9 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     <div class="project-separator container-full"></div>
 
     <!-- Description + infos latérales -->
+    <!-- Ordre DOM = ordre mobile : description d'abord, sideInfo ensuite -->
+    <!-- Sur desktop, order CSS remet sideInfo à gauche (col 1) -->
     <section class="project-intro container">
-      <aside class="project-side-info">
-        {sideInfo
-          ? <Fragment set:html={sideInfo} />
-          : <span></span>
-        }
-      </aside>
       <div class="project-description">
         <p>{description}</p>
         <div class="project-tags">
@@ -53,6 +49,12 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
           ))}
         </div>
       </div>
+      <aside class="project-side-info">
+        {sideInfo
+          ? <Fragment set:html={sideInfo} />
+          : <span></span>
+        }
+      </aside>
     </section>
 
     <!-- Galerie : décalée à droite (aligne avec la colonne description) -->
@@ -115,24 +117,29 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
 
   .project-side-info {
     font-family: var(--font-serif); /* Instrument Serif comme sur Webflow */
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--color-text);
+    font-size: 1rem;               /* 16px minimum — lisible */
+    line-height: 1.65;
+    color: var(--color-text-light); /* légèrement plus clair = hiérarchie secondaire */
   }
 
   .project-description p {
     font-family: var(--font-serif); /* Instrument Serif comme sur Webflow */
-    font-size: clamp(1.05rem, 1.6vw, 1.35rem);
-    line-height: 1.55;
+    font-size: clamp(1.1rem, 1.6vw, 1.35rem); /* min 17.6px */
+    line-height: 1.6;
     hyphens: none;
     -webkit-hyphens: none;
   }
 
+  /* Tags sur page projet — légèrement plus grands que sur les cards */
   .project-tags {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
     margin-top: var(--space-md);
+  }
+
+  .project-tags .tag {
+    font-size: 0.8rem;
   }
 
   /* --- Galerie --- */
@@ -187,12 +194,15 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
       padding-top: var(--space-lg);
     }
 
+    /* Sur desktop, sideInfo revient en colonne gauche (ordre DOM inversé) */
+    .project-side-info {
+      order: -1;
+    }
+
     /* Galerie décalée — s'aligne avec la colonne droite */
     .project-gallery {
       padding-left: calc(250px + var(--space-xl));
     }
-
-    /* Projet suivant — bas gauche, aligné avec le titre */
   }
 
   @media (min-width: 1024px) {

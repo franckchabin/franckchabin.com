@@ -79,15 +79,16 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
 
   /* --- Titre --- */
   .project-header {
-    padding-top: calc(var(--nav-height) + var(--space-sm));
+    padding-top: calc(var(--nav-height) + var(--space-xl)); /* plus d'air au-dessus */
     padding-bottom: var(--space-md);
   }
 
   .project-title {
-    font-family: var(--font-display);
+    font-family: var(--font-serif); /* Instrument Serif, comme sur Webflow */
+    font-weight: normal;
     font-size: clamp(3.5rem, 10vw, 8rem);
     line-height: 1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
   }
 
   /* --- Séparateur pleine largeur --- */
@@ -113,17 +114,18 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
   }
 
   .project-side-info {
-    font-family: var(--font-body);
-    font-size: 0.85rem;
+    font-family: var(--font-serif); /* Instrument Serif comme sur Webflow */
+    font-size: 0.95rem;
     line-height: 1.6;
-    color: var(--color-text-light);
+    color: var(--color-text);
   }
 
   .project-description p {
-    font-size: clamp(1rem, 1.5vw, 1.2rem);
-    line-height: 1.7;
-    hyphens: auto;
-    -webkit-hyphens: auto;
+    font-family: var(--font-serif); /* Instrument Serif comme sur Webflow */
+    font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+    line-height: 1.55;
+    hyphens: none;
+    -webkit-hyphens: none;
   }
 
   .project-tags {

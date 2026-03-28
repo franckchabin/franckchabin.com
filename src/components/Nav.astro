@@ -100,7 +100,7 @@ const currentPath = Astro.url.pathname;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 100;
+    z-index: var(--z-nav);
     background-color: transparent;
   }
 
@@ -144,7 +144,7 @@ const currentPath = Astro.url.pathname;
     border-radius: var(--radius-pill);
     cursor: pointer;
     position: relative;
-    z-index: 101;
+    z-index: var(--z-nav-burger);
     transition: background-color var(--transition-fast);
   }
 
@@ -167,7 +167,7 @@ const currentPath = Astro.url.pathname;
   .nav-overlay {
     position: fixed;
     inset: 0;
-    z-index: 99;
+    z-index: var(--z-nav-overlay);
     background-color: var(--color-bg);
     display: flex;
     align-items: flex-start;

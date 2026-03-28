@@ -35,7 +35,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     </header>
 
     <!-- Séparateur -->
-    <div class="project-separator container-full"></div>
+    <hr class="project-separator container" />
 
     <!-- Description + infos latérales -->
     <!-- Ordre DOM = ordre mobile : description d'abord, sideInfo ensuite -->
@@ -57,7 +57,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
       </aside>
     </section>
 
-    <!-- Galerie : décalée à droite (aligne avec la colonne description) -->
+    <!-- Galerie -->
     <section class="project-gallery container">
       <slot />
     </section>
@@ -65,7 +65,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     <!-- Navigation projet suivant -->
     {nextProject && (
       <nav class="project-next container" aria-label="Projet suivant">
-        <a href={`${BASE}${nextProject.slug}`} class="btn project-next-btn">
+        <a href={`${BASE}${nextProject.slug}`} class="btn">
           Projet suivant → {nextProject.title}
         </a>
       </nav>
@@ -81,24 +81,19 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
 
   /* --- Titre --- */
   .project-header {
-    padding-top: calc(var(--nav-height) + var(--space-xl)); /* plus d'air au-dessus */
+    padding-top: calc(var(--nav-height) + var(--space-xl));
     padding-bottom: var(--space-md);
   }
 
   .project-title {
-    font-family: var(--font-serif); /* Instrument Serif, comme sur Webflow */
+    font-family: var(--font-serif);
     font-weight: normal;
     font-size: clamp(3.5rem, 10vw, 8rem);
     line-height: 1;
     letter-spacing: -0.02em;
   }
 
-  /* --- Séparateur pleine largeur --- */
-  .container-full {
-    width: 100%;
-    padding: 0 var(--gutter);
-  }
-
+  /* --- Séparateur --- */
   .project-separator {
     height: 1px;
     background-color: var(--color-border);
@@ -116,21 +111,20 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
   }
 
   .project-side-info {
-    font-family: var(--font-serif); /* Instrument Serif comme sur Webflow */
-    font-size: 1rem;               /* 16px minimum — lisible */
+    font-family: var(--font-serif);
+    font-size: 1rem;
     line-height: 1.65;
-    color: var(--color-text-light); /* légèrement plus clair = hiérarchie secondaire */
+    color: var(--color-text-light);
   }
 
   .project-description p {
-    font-family: var(--font-serif); /* Instrument Serif comme sur Webflow */
-    font-size: clamp(1.25rem, 2vw, 1.6rem); /* mobile: 20px, desktop: jusqu'à 25.6px */
+    font-family: var(--font-serif);
+    font-size: clamp(1.25rem, 2vw, 1.6rem);
     line-height: 1.5;
     hyphens: none;
     -webkit-hyphens: none;
   }
 
-  /* Tags sur page projet — légèrement plus grands que sur les cards */
   .project-tags {
     display: flex;
     gap: 0.5rem;
@@ -157,12 +151,6 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     display: block;
   }
 
-  .project-gallery :global(.gallery-row) {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-md);
-  }
-
   .project-gallery :global(.gallery-bg) {
     padding: var(--space-lg);
     display: flex;
@@ -176,10 +164,6 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     margin-top: var(--space-2xl);
   }
 
-  .project-next-btn {
-    display: inline-block;
-  }
-
   /* =============================================
      DESKTOP : grille 2 colonnes
      ============================================= */
@@ -189,7 +173,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     }
 
     .project-intro {
-      grid-template-columns: 250px 1fr;
+      grid-template-columns: var(--sidebar-width) 1fr;
       gap: var(--space-xl);
       padding-top: var(--space-lg);
     }
@@ -199,15 +183,14 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
       order: -1;
     }
 
-    /* Galerie décalée — s'aligne avec la colonne droite (gutter inclus) */
+    /* Galerie décalée — s'aligne avec la colonne droite */
     .project-gallery {
-      padding-left: calc(var(--gutter) + 250px + var(--space-xl));
+      padding-left: calc(var(--gutter) + var(--sidebar-width) + var(--space-xl));
     }
   }
 
   @media (min-width: 1024px) {
     .project-header {
-      /* On garde le calcul nav-height partout — la nav est fixe à tous les breakpoints */
       padding-top: calc(var(--nav-height) + var(--space-md));
     }
   }

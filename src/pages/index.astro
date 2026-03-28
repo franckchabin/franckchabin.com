@@ -165,7 +165,7 @@ const projects = [
   .hero-trail {
     position: absolute;
     inset: 0;
-    z-index: 0;
+    z-index: var(--z-trail);
     pointer-events: none;
   }
 
@@ -185,7 +185,7 @@ const projects = [
   /* --- Contenu du hero — AU-DESSUS du trail --- */
   .hero-content {
     position: relative;
-    z-index: 2;
+    z-index: var(--z-content);
     flex: 1;               /* remplace height:100% — s'étire dans le flex parent */
     display: flex;
     flex-direction: column;

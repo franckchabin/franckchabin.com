@@ -5,7 +5,7 @@
 
 /* @font-face déplacé dans Base.astro pour supporter BASE_URL dynamique */
 
-/* --- Variables CSS --- */
+/* --- Tokens de design --- */
 :root {
   /* Typographies */
   --font-display: 'Maria Unconnected', sans-serif;
@@ -20,25 +20,35 @@
   --color-border:      #e0e0e0;
 
   /* Espacement (échelle harmonique) */
-  --space-xs:  0.5rem;
-  --space-sm:  1rem;
-  --space-md:  1.5rem;
-  --space-lg:  2.5rem;
-  --space-xl:  4rem;
-  --space-2xl: 6rem;
+  --space-xs:  0.5rem;   /*  8px */
+  --space-sm:  1rem;     /* 16px */
+  --space-md:  1.5rem;   /* 24px */
+  --space-lg:  2.5rem;   /* 40px */
+  --space-xl:  4rem;     /* 64px */
+  --space-2xl: 6rem;     /* 96px */
 
   /* Largeurs */
   --max-width: 1540px;
-  --gutter:    0.75rem; /* 12px — marges très serrées */
+  --gutter:    0.75rem;  /* 12px — marges serrées, élargi en responsive */
+
+  /* Layout projet (colonne sideInfo) */
+  --sidebar-width: 250px;
 
   /* Bordures & arrondis */
   --border-width:  1.5px;
-  --radius-pill:   50px;   /* Boutons interactifs (nav, CTA) */
-  --radius-tag:    6px;    /* Tags passifs (catégories, labels) */
+  --radius-pill:   50px;  /* Boutons interactifs (nav, CTA) */
+  --radius-tag:    6px;   /* Tags passifs (catégories, labels) */
   --radius-card:   2px;
 
-  /* Hauteur nav (valeur de fallback, écrasée par JS dans Nav.astro) */
+  /* Hauteur nav (fallback — écrasée par JS dans Nav.astro) */
   --nav-height: 60px;
+
+  /* Z-index */
+  --z-trail:       0;
+  --z-content:     2;
+  --z-nav-overlay: 99;
+  --z-nav:         100;
+  --z-nav-burger:  101;
 
   /* Animation */
   --blur-enabled: 0;  /* 0 = blur OFF, 1 = blur ON */
@@ -65,7 +75,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Body flex : permet au hero de prendre tout l'espace restant */
 body {
   font-family: var(--font-body);
   font-weight: 400;
@@ -101,12 +110,10 @@ h2 {
   font-size: clamp(1.5rem, 3vw, 2.5rem);
 }
 
-/* Tagline — style partagé avec .hero-intro dans index.astro, ici juste l'italic */
 .tagline {
   font-style: italic;
 }
 
-/* Corps de texte — minimum 16px (standard web) */
 p {
   font-family: var(--font-body);
   font-size: clamp(1rem, 1.2vw, 1.2rem);
@@ -124,13 +131,13 @@ a {
   text-decoration: none;
 }
 
-/* --- Focus accessible (clavier uniquement, pas au clic souris) --- */
+/* --- Focus accessible (clavier uniquement) --- */
 :focus-visible {
   outline: 2px solid var(--color-text);
   outline-offset: 3px;
 }
 
-/* --- Images & vidéos --- */
+/* --- Médias --- */
 img,
 video {
   max-width: 100%;
@@ -157,7 +164,7 @@ video {
 }
 
 /* ============================================
-   BOUTONS — éléments interactifs (nav, CTA, liens)
+   BOUTONS — éléments interactifs (nav, CTA)
    Forme pill, hover actif
    ============================================ */
 .btn {
@@ -186,7 +193,6 @@ video {
 /* --- Utilitaires --- */
 .container {
   width: 100%;
-  /* Pleine largeur — pas de max-width, juste du padding latéral */
   padding: 0 var(--gutter);
 }
 
@@ -220,9 +226,9 @@ video {
    ============================================ */
 
 @media (min-width: 768px) {
-  :root { --gutter: 1.25rem; } /* 20px */
+  :root { --gutter: 1.25rem; }
 }
 
 @media (min-width: 1024px) {
-  :root { --gutter: 1.5rem; } /* 24px */
+  :root { --gutter: 1.5rem; }
 }

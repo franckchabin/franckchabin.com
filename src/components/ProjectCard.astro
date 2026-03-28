@@ -2,8 +2,8 @@
 import { BASE } from '../config';
 /*
   Carte projet — grille homepage
-  Aucun effet de hover, zoom, ou halo.
-  Les tags sont passifs (classe .tag).
+  Layout : image/vidéo → titre → tags (ferrés à droite)
+  Pas de hover, zoom, ou halo. Tags passifs (classe .tag).
 */
 
 interface Props {
@@ -51,7 +51,9 @@ const { title, slug, tags, image, video } = Astro.props;
     display: block;
   }
 
-  /* Mobile : titre au-dessus, tags en-dessous ferrés à droite */
+  /* Titre au-dessus, tags en-dessous ferrés à droite.
+     Layout en colonne à toutes les tailles — évite le chevauchement
+     quand le titre est long et les tags nombreux. */
   .project-card-info {
     display: flex;
     flex-direction: column;
@@ -71,28 +73,10 @@ const { title, slug, tags, image, video } = Astro.props;
     display: flex;
     gap: 0.35rem;
     flex-wrap: wrap;
-    justify-content: flex-end; /* ferré à droite */
+    justify-content: flex-end;
   }
 
   .project-card-tags .tag {
     font-size: 0.8rem;
-  }
-
-  /* Desktop : titre à gauche, tags à droite sur la même ligne */
-  @media (min-width: 768px) {
-    .project-card-info {
-      flex-direction: row;
-      align-items: flex-end;
-    }
-
-    .project-card-title {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .project-card-tags {
-      justify-content: flex-start;
-      flex-shrink: 0;
-    }
   }
 </style>

@@ -51,34 +51,48 @@ const { title, slug, tags, image, video } = Astro.props;
     display: block;
   }
 
+  /* Mobile : titre au-dessus, tags en-dessous ferrés à droite */
   .project-card-info {
     display: flex;
-    align-items: flex-end;  /* titre et tags alignés sur leur ligne de base basse */
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.4rem;
     padding-top: 0.75rem;
-    flex-wrap: wrap;        /* sur mobile : tags à la ligne si pas de place */
   }
 
   .project-card-title {
     font-family: var(--font-serif);
-    /* Taille : cap-height ≈ hauteur visuelle du tag-box */
     font-size: clamp(1.8rem, 2.5vw, 2.2rem);
     font-weight: normal;
     font-style: normal;
     line-height: 1.1;
-    flex: 1;
-    min-width: 0;
   }
 
   .project-card-tags {
     display: flex;
     gap: 0.35rem;
     flex-wrap: wrap;
-    flex-shrink: 0;
-    margin-left: auto; /* ferré à droite — fonctionne aussi quand les tags passent à la ligne */
+    justify-content: flex-end; /* ferré à droite */
   }
 
   .project-card-tags .tag {
     font-size: 0.8rem;
+  }
+
+  /* Desktop : titre à gauche, tags à droite sur la même ligne */
+  @media (min-width: 768px) {
+    .project-card-info {
+      flex-direction: row;
+      align-items: flex-end;
+    }
+
+    .project-card-title {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .project-card-tags {
+      justify-content: flex-start;
+      flex-shrink: 0;
+    }
   }
 </style>

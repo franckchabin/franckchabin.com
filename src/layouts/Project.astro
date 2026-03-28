@@ -195,7 +195,8 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
 
   @media (min-width: 1024px) {
     .project-header {
-      padding-top: var(--space-lg);
+      /* On garde le calcul nav-height partout — la nav est fixe à tous les breakpoints */
+      padding-top: calc(var(--nav-height) + var(--space-md));
     }
   }
 </style>

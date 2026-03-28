@@ -1,19 +1,12 @@
 ---
 /*
   LAYOUT PROJET
-  Structure commune à toutes les pages projet :
-  1. Titre en grand
-  2. Bloc description (texte + métadonnées latérales)
-  3. Tags
-  4. Galerie de médias (images, vidéos, embeds) — via <slot />
-  5. Navigation vers le projet suivant
-
-  Props :
-  - title : nom du projet
-  - description : texte descriptif du projet
-  - tags : liste de catégories
-  - sideInfo : informations latérales (ex: polices utilisées)
-  - nextProject : { title, slug } du projet suivant
+  Structure calquée sur le site Webflow de référence :
+  1. Titre (h1, pleine largeur)
+  2. Séparateur horizontal
+  3. Deux colonnes : gauche (sideInfo) / droite (description + tags)
+  4. Galerie — décalée à droite pour s'aligner avec la colonne description
+  5. "Projet suivant" — bouton .btn pill en bas à gauche
 */
 
 import Base from './Base.astro';
@@ -41,13 +34,17 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
       <h1 class="project-title">{title}</h1>
     </header>
 
+    <!-- Séparateur -->
+    <div class="project-separator container-full"></div>
+
     <!-- Description + infos latérales -->
     <section class="project-intro container">
-      {sideInfo && (
-        <aside class="project-side-info">
-          <Fragment set:html={sideInfo} />
-        </aside>
-      )}
+      <aside class="project-side-info">
+        {sideInfo
+          ? <Fragment set:html={sideInfo} />
+          : <span></span>
+        }
+      </aside>
       <div class="project-description">
         <p>{description}</p>
         <div class="project-tags">
@@ -58,17 +55,16 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
       </div>
     </section>
 
-    <!-- Galerie (contenu libre via slot) -->
+    <!-- Galerie : décalée à droite (aligne avec la colonne description) -->
     <section class="project-gallery container">
       <slot />
     </section>
 
-    <!-- Navigation vers le projet suivant -->
+    <!-- Navigation projet suivant -->
     {nextProject && (
       <nav class="project-next container" aria-label="Projet suivant">
-        <a href={`${BASE}${nextProject.slug}`} class="project-next-link">
-          <span class="project-next-label">projet suivant →</span>
-          <span class="project-next-title">{nextProject.title}</span>
+        <a href={`${BASE}${nextProject.slug}`} class="btn project-next-btn">
+          Projet suivant → {nextProject.title}
         </a>
       </nav>
     )}
@@ -81,11 +77,10 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     padding-bottom: var(--space-2xl);
   }
 
-  /* --- Header --- */
+  /* --- Titre --- */
   .project-header {
-    /* offset nav fixe + espace interne */
-    padding-top: calc(var(--nav-height) + var(--space-md));
-    padding-bottom: var(--space-lg);
+    padding-top: calc(var(--nav-height) + var(--space-sm));
+    padding-bottom: var(--space-md);
   }
 
   .project-title {
@@ -95,11 +90,25 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     letter-spacing: -0.03em;
   }
 
-  /* --- Introduction (description + sidebar) --- */
+  /* --- Séparateur pleine largeur --- */
+  .container-full {
+    width: 100%;
+    padding: 0 var(--gutter);
+  }
+
+  .project-separator {
+    height: 1px;
+    background-color: var(--color-border);
+    border: none;
+    margin: 0;
+  }
+
+  /* --- Intro : deux colonnes --- */
   .project-intro {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-lg);
+    gap: var(--space-md);
+    padding-top: var(--space-md);
     padding-bottom: var(--space-lg);
   }
 
@@ -111,9 +120,10 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
   }
 
   .project-description p {
-    font-size: clamp(1rem, 1.8vw, 1.25rem);
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
     line-height: 1.7;
-    /* max-width supprimé — pleine largeur */
+    hyphens: auto;
+    -webkit-hyphens: auto;
   }
 
   .project-tags {
@@ -130,31 +140,20 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     gap: var(--space-md);
   }
 
-  /* Les images dans la galerie */
-  .project-gallery :global(img) {
-    width: 100%;
-    height: auto;
-    border-radius: var(--radius-card);
-  }
-
+  .project-gallery :global(img),
   .project-gallery :global(video) {
     width: 100%;
     height: auto;
     border-radius: var(--radius-card);
+    display: block;
   }
 
-  /* Layout pour les images côte à côte */
   .project-gallery :global(.gallery-row) {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-md);
   }
 
-  .project-gallery :global(.gallery-full) {
-    width: 100%;
-  }
-
-  /* Image avec fond coloré */
   .project-gallery :global(.gallery-bg) {
     padding: var(--space-lg);
     display: flex;
@@ -163,42 +162,35 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     border-radius: var(--radius-card);
   }
 
-  /* --- Navigation projet suivant --- */
+  /* --- Projet suivant --- */
   .project-next {
     margin-top: var(--space-2xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--color-border);
   }
 
-  .project-next-link {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-sm);
-    transition: opacity var(--transition-fast);
+  .project-next-btn {
+    display: inline-block;
   }
 
-  .project-next-link:hover {
-    opacity: 0.6;
-  }
-
-  .project-next-label {
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    color: var(--color-text-light);
-  }
-
-  .project-next-title {
-    font-family: var(--font-serif);
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    font-style: italic;
-  }
-
-  /* --- Responsive desktop --- */
+  /* =============================================
+     DESKTOP : grille 2 colonnes
+     ============================================= */
   @media (min-width: 768px) {
+    .project-header {
+      padding-bottom: var(--space-lg);
+    }
+
     .project-intro {
       grid-template-columns: 250px 1fr;
       gap: var(--space-xl);
+      padding-top: var(--space-lg);
     }
+
+    /* Galerie décalée — s'aligne avec la colonne droite */
+    .project-gallery {
+      padding-left: calc(250px + var(--space-xl));
+    }
+
+    /* Projet suivant — bas gauche, aligné avec le titre */
   }
 
   @media (min-width: 1024px) {

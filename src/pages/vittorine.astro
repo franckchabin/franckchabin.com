@@ -10,7 +10,7 @@ import Project from '../layouts/Project.astro';
 <Project
   title="Vittorine"
   description="Vittorine est un objet éditorial sous forme de broadsheet (journal grand format), accompagné d'un dessin de caractères original. Le projet explore la mise en page éditoriale à grande échelle avec une typographie sur mesure."
-  tags={["Object éditorial", "Dessin de caractères"]}
+  tags={["Objet éditorial", "Dessin de caractères"]}
   nextProject={{ title: "75000", slug: "75000" }}
 >
 
@@ -18,8 +18,8 @@ import Project from '../layouts/Project.astro';
 
   <!-- Vidéo de présentation -->
   <video
-    src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720371590/%C2%A9franckchabin_Vittorine_02.mp4"
-    autoplay loop muted playsinline
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720371590/%C2%A9franckchabin_Vittorine_02.mp4"
+    autoplay loop muted playsinline preload="none"
   ></video>
 
   <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_02_poster.webp`} alt="Vittorine — poster typographique" loading="lazy" />

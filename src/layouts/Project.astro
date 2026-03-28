@@ -17,6 +17,7 @@
 */
 
 import Base from './Base.astro';
+import { BASE } from '../config';
 
 interface Props {
   title: string;
@@ -65,7 +66,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     <!-- Navigation vers le projet suivant -->
     {nextProject && (
       <nav class="project-next container" aria-label="Projet suivant">
-        <a href={`/${nextProject.slug}`} class="project-next-link">
+        <a href={`${BASE}${nextProject.slug}`} class="project-next-link">
           <span class="project-next-label">projet suivant →</span>
           <span class="project-next-title">{nextProject.title}</span>
         </a>

@@ -101,16 +101,9 @@ h2 {
   font-size: clamp(1.5rem, 3vw, 2.5rem);
 }
 
-/* Tagline — même échelle que .hero-intro, en italic */
+/* Tagline — style partagé avec .hero-intro dans index.astro, ici juste l'italic */
 .tagline {
-  font-family: var(--font-serif);
   font-style: italic;
-  font-size: clamp(1.35rem, 2.2vw, 1.9rem);
-  line-height: 1.35;
-  color: var(--color-text);
-  hyphens: none;
-  -webkit-hyphens: none;
-  text-wrap: balance;
 }
 
 /* Corps de texte */

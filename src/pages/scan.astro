@@ -14,6 +14,7 @@
 */
 
 import Base from '../layouts/Base.astro';
+import { BASE } from '../config';
 
 // Liste des images de la page Scan
 // direction : 'left' ou 'right' (sens de l'animation au scroll)
@@ -44,7 +45,7 @@ const scanFiles = [
 ];
 
 const images = scanFiles.map((file, i) => ({
-  src: `/images/scan/${file}`,
+  src: `${BASE}images/scan/${file}`,
   alt: `Scan ${String(i + 1).padStart(3, '0')}`,
   direction: directions[i % directions.length],
   size: sizes[i % sizes.length],

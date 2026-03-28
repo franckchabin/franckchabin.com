@@ -81,7 +81,7 @@ const {
             io.unobserve(v);
           }
         });
-      }, { rootMargin: '300px', threshold: 0 });
+      }, { rootMargin: '0px', threshold: 0.1 });
       videos.forEach(v => io.observe(v));
     });
   </script>

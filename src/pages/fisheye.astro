@@ -10,7 +10,7 @@ import Project from '../layouts/Project.astro';
 <Project
   title="Fisheye"
   description="Direction artistique et motion design réalisés pour le Prix Fisheye de la Création Visuelle. Le projet comprend l'identité visuelle de l'événement, l'affiche, ainsi que les animations promotionnelles."
-  tags={["Object éditorial", "Direction artistique", "Motion design"]}
+  tags={["Objet éditorial", "Direction artistique", "Motion design"]}
   nextProject={{ title: "Anemo", slug: "anemo" }}
 >
 
@@ -20,14 +20,14 @@ import Project from '../layouts/Project.astro';
 
   <!-- Vidéo showreel -->
   <video
-    src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1720743025/%C2%A9franckchabin_Fisheye_showreel.mp4"
-    autoplay loop muted playsinline
+    data-src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1720743025/%C2%A9franckchabin_Fisheye_showreel.mp4"
+    autoplay loop muted playsinline preload="none"
   ></video>
 
   <!-- Vidéo motion -->
   <video
-    src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720753437/%C2%A9franckchabin_Fisheye_03.mp4"
-    autoplay loop muted playsinline
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720753437/%C2%A9franckchabin_Fisheye_03.mp4"
+    autoplay loop muted playsinline preload="none"
   ></video>
 
   <img src={`${BASE}images/projects/fisheye/©franckchabin_Fisheye_04.gif`} alt="Fisheye — animation" loading="lazy" />

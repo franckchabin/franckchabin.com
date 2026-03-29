@@ -173,7 +173,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     }
 
     .project-intro {
-      grid-template-columns: var(--sidebar-width) 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, var(--gallery-max));
       gap: var(--space-xl);
       padding-top: var(--space-lg);
     }
@@ -181,11 +181,14 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     /* Sur desktop, sideInfo revient en colonne gauche (ordre DOM inversé) */
     .project-side-info {
       order: -1;
+      overflow: hidden;
     }
 
-    /* Galerie décalée — s'aligne avec la colonne droite */
+    /* Galerie alignée à droite, largeur calée sur 80vh × 1.5 */
     .project-gallery {
-      padding-left: calc(var(--gutter) + var(--sidebar-width) + var(--space-xl));
+      max-width: var(--gallery-max);
+      margin-left: auto;
+      padding-left: 0;
     }
   }
 

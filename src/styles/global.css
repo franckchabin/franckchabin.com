@@ -31,8 +31,8 @@
   --max-width: 1540px;
   --gutter:    0.75rem;  /* 12px — marges serrées, élargi en responsive */
 
-  /* Layout projet (colonne sideInfo) */
-  --sidebar-width: 250px;
+  /* Layout projet (largeur galerie = 80vh × ratio 3:2) */
+  --gallery-max: calc(80vh * 1.5);
 
   /* Bordures & arrondis */
   --border-width:  1.5px;

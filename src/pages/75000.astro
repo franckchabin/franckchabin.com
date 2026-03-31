@@ -1,0 +1,106 @@
+---
+import { BASE } from '../config';
+/*
+  PAGE PROJET : 75000
+  ==================
+  Abécédaire des rues de Paris, inspiré par les cartes de Monopoly.
+
+  Cette page sert de MODÈLE pour toutes les pages projet.
+  Pour créer un nouveau projet, copie ce fichier et modifie :
+  1. Le nom du fichier (ex: golosino.astro)
+  2. Les props du layout (title, description, tags, etc.)
+  3. Le contenu de la galerie (images, vidéos)
+*/
+
+import Project from '../layouts/Project.astro';
+---
+
+<Project
+  title="75000"
+  description="75000 est un abécédaire des rues de Paris, inspiré par le design des cartes de Monopoly. Cet objet d'édition collector permet de découvrir les voies emblématiques et les trésors cachés de la capitale. Chaque carte colorée met en valeur une rue parisienne et ses points d'intérêt. Inclus dans sa boîte, le projet comprend un lecteur de cartes pour accéder à des informations digitales supplémentaires."
+  tags={["Identité visuelle", "3D"]}
+  sideInfo="<strong>Polices de caractère :</strong><br/><br/>Parisine par Jean François Porchez et publié par Typofonderie"
+  nextProject={{ title: "Golosino", slug: "golosino", thumbnail: "images/projects/golosino/©franckchabin_GOLOSINO_01.webp" }}
+>
+
+  <!--
+    GALERIE — Classes CSS disponibles :
+    - (rien)            → image pleine largeur
+    - class="gallery-row" → deux images côte à côte
+    - class="gallery-bg"  → image centrée sur fond coloré
+  -->
+
+  <!-- Image pleine largeur : vue des cartes -->
+  <img
+    src={`${BASE}images/projects/75000/©franckchabin_75000_04.webp`}
+    alt="Vue d'ensemble des cartes 75000 colorées"
+    loading="lazy"
+  />
+
+  <!-- Vidéo 1 : animation des cartes -->
+  <video
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720147939/%C2%A9franckchabin_75000_01.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <!-- Détail des cartes -->
+  <img
+    src={`${BASE}images/projects/75000/©franckchabin_75000_05.webp`}
+    alt="Détails des cartes de rues parisiennes"
+    loading="lazy"
+  />
+
+  <!-- Vidéo 2 -->
+  <video
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720147945/%C2%A9franckchabin_75000_02.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img
+    src={`${BASE}images/projects/75000/©franckchabin_75000_06.webp`}
+    alt="Carte de rue en gros plan"
+    loading="lazy"
+  />
+  <img
+    src={`${BASE}images/projects/75000/©franckchabin_75000_07.webp`}
+    alt="Boîtier du jeu 75000"
+    loading="lazy"
+  />
+
+  <!-- Boîtier sur fond clair -->
+  <div class="gallery-bg" style="background-color: #f5f5f5;">
+    <img
+      src={`${BASE}images/projects/75000/©franckchabin_75000_08.webp`}
+      alt="Lecteur de cartes et boîtier 75000"
+      loading="lazy"
+      style="max-width: 80%;"
+    />
+  </div>
+
+  <!-- Vidéo 3 -->
+  <video
+    data-src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1722289333/%C2%A9franckchabin_75000_03.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+</Project>
+
+<style>
+  /* Style spécifique au embed vidéo responsive */
+  .video-embed {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* ratio 16:9 */
+    height: 0;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+  }
+
+  .video-embed iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>

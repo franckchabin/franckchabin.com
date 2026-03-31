@@ -1,0 +1,112 @@
+#!/bin/bash
+# ─── Launcher franckchabin.com Dashboard ───
+# Détecte le dossier projet relativement à l'emplacement de l'app
+
+APP_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+PROJECT="$APP_DIR"
+PORT=3333
+
+# ─── Fonctions d'interface graphique (osascript) ───
+
+notify() {
+  osascript -e "display notification \"$1\" with title \"franckchabin.com\""
+}
+
+alert() {
+  osascript -e "display dialog \"$1\" with title \"franckchabin.com\" buttons {\"OK\"} default button \"OK\" with icon caution"
+}
+
+progress_dialog() {
+  # Lance une barre de progression indéterminée via AppleScript
+  osascript <<'ASCRIPT' &
+    tell application "System Events"
+      activate
+    end tell
+    display dialog "Installation des dépendances en cours…
+
+Merci de patienter, ça ne prend qu'une minute." with title "franckchabin.com" buttons {} giving up after 300 with icon note
+ASCRIPT
+  echo $!
+}
+
+# ─── Vérification Node.js ───
+
+NODE_PATH=""
+for p in /usr/local/bin/node /opt/homebrew/bin/node "$HOME/.nvm/versions/node"/*/bin/node; do
+  if [ -x "$p" ]; then
+    NODE_PATH="$p"
+    break
+  fi
+done
+
+if [ -z "$NODE_PATH" ]; then
+  alert "Node.js n'est pas installé.
+
+Télécharge-le sur :
+https://nodejs.org
+
+Puis double-clique à nouveau sur l'app."
+  open "https://nodejs.org"
+  exit 1
+fi
+
+NODE_DIR="$(dirname "$NODE_PATH")"
+export PATH="$NODE_DIR:$PATH"
+
+# ─── Vérification package.json ───
+
+if [ ! -f "$PROJECT/package.json" ]; then
+  alert "Fichier package.json introuvable.
+
+L'app Dashboard.app doit rester dans le dossier du projet franckchabin.com."
+  exit 1
+fi
+
+# ─── Installation des dépendances si nécessaire ───
+
+if [ ! -d "$PROJECT/node_modules" ]; then
+  # Afficher un dialogue de progression
+  DIALOG_PID=$(progress_dialog)
+
+  cd "$PROJECT"
+  npm install > /tmp/franckchabin-install.log 2>&1
+  INSTALL_EXIT=$?
+
+  # Fermer le dialogue de progression
+  kill "$DIALOG_PID" 2>/dev/null
+  wait "$DIALOG_PID" 2>/dev/null
+
+  if [ $INSTALL_EXIT -ne 0 ]; then
+    LOG=$(cat /tmp/franckchabin-install.log | tail -20)
+    alert "Erreur lors de l'installation des dépendances :
+
+$LOG"
+    exit 1
+  fi
+
+  notify "Dépendances installées ✓"
+fi
+
+# ─── Tuer un éventuel ancien processus sur le port ───
+
+lsof -ti:$PORT | xargs kill -9 2>/dev/null
+
+# ─── Lancer le dashboard ───
+
+cd "$PROJECT"
+"$NODE_PATH" app.mjs &
+SERVER_PID=$!
+
+# Attendre que le serveur soit prêt
+for i in $(seq 1 30); do
+  if curl -s http://localhost:$PORT > /dev/null 2>&1; then
+    break
+  fi
+  sleep 0.3
+done
+
+# Ouvrir dans le navigateur
+open "http://localhost:$PORT"
+
+# Garder le process vivant tant que le serveur tourne
+wait $SERVER_PID

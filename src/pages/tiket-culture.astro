@@ -1,0 +1,51 @@
+---
+import { BASE } from '../config';
+/*
+  PAGE PROJET : Tiket Culture
+  Objet éditorial — jeu de tickets culturels pour le métro parisien.
+*/
+import Project from '../layouts/Project.astro';
+---
+
+<Project
+  title="Tiket Culture"
+  description="Avec la fin de la crise sanitaire et la réouverture des lieux culturels parisiens, TIKET CULTURE propose une collection d'éditions mettant en lumière les trésors culturels le long des lignes de métro. Chaque livret guide le lecteur le long d'une ligne spécifique, dévoilant ses musées, bibliothèques, théâtres et autres points d'intérêt illustré avec un système pictographique. Chacun est accompagné de cartes postales, carnets de tickets culturels et marque-pages disponibles dans les boutiques souvenirs et guides touristiques."
+  tags={["Objet éditorial", "Rédaction", "Iconographie"]}
+  sideInfo="<strong>Polices de caractère :</strong><br/><br/>Whyte Inktrap par Dinamo<br/><br/>Inspiré par la carte « ARTS & CULTURE PARIS et sa banlieue » de Lucas Destrem"
+  nextProject={{ title: "Fisheye", slug: "fisheye", thumbnail: "images/projects/fisheye/©franckchabin_Fisheye_02.webp" }}
+>
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_01_centre-pompidou-book-2.webp`} alt="Ticket Culture — livre Centre Pompidou" loading="lazy" />
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_02_all-asset.webp`} alt="Ticket Culture — ensemble des éléments" loading="lazy" />
+
+  <!-- Vidéo teaser -->
+  <video
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720149503/%C2%A9franckchabin_tiket-culture_03_video_teaser.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_04_books-and-traveler.webp`} alt="Ticket Culture — livres et voyageur" loading="lazy" />
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_05_cultural-subway-adventure.webp`} alt="Ticket Culture — aventure culturelle métro" loading="lazy" />
+
+  <!-- Vidéo pages -->
+  <video
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720149502/mkttoj9bmnyg63snepml.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_08_Pages-visual.webp`} alt="Ticket Culture — pages visuelles" loading="lazy" />
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_09_all-tickets.webp`} alt="Ticket Culture — tous les tickets" loading="lazy" />
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_10_all-icon.gif`} alt="Ticket Culture — animation icônes" loading="lazy" />
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_11_ticket-ligne-4.webp`} alt="Ticket Culture — ticket ligne 4" loading="lazy" />
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_13_bookmark-and-postcards.webp`} alt="Ticket Culture — marque-pages et cartes postales" loading="lazy" />
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_14_close-up-books.webp`} alt="Ticket Culture — gros plan livres" loading="lazy" />
+
+  <img src={`${BASE}images/projects/ticket-culture/©franckchabin_tiket-culture_15_logo.webp`} alt="Ticket Culture — logo" loading="lazy" />
+
+</Project>

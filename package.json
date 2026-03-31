@@ -1,0 +1,14 @@
+{
+  "name": "franckchabin-portfolio",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "app": "node app.mjs",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.7.0"
+  }
+}

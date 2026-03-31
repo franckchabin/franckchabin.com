@@ -1,0 +1,41 @@
+---
+import { BASE } from '../config';
+/*
+  PAGE PROJET : Mémoire
+  Typographes, créateurs de caractères et typodiversité.
+  Rédaction et objet éditorial.
+*/
+import Project from '../layouts/Project.astro';
+---
+
+<Project
+  title="Typographes créateurs de caractères et typodiversité"
+  description="Rédigé dans le cadre de mon master, ce dossier d'étude explore le rôle des typographes et créateurs de caractères dans un contexte contemporain de typodiversité. Les avancées technologiques ont redéfini leurs rôles et ont permis de nouvelles perspectives créatives. En tant que concepteur graphique passionné par les courbes de Bézier, je m'interroge sur l'importance de ces métiers face à la surabondance actuelle de polices de caractères."
+  tags={["Objet éditorial", "Rédaction"]}
+  sideInfo="<strong>Polices de caractère :</strong><br/><br/>Open Source Font<br/>Libre Calson par Impallari Type<br/><br/>Template 3D par Julia Von Dorpp"
+  nextProject={{ title: "Vittorine", slug: "vittorine", thumbnail: "images/projects/vittorine/©franckchabin_Vittorine_01.webp" }}
+>
+
+  <!-- Vidéo de présentation -->
+  <video
+    data-src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1720744642/%C2%A9franckchabin_TCCT_01-2.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_02.webp`} alt="Mémoire — couverture" loading="lazy" />
+
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_03.webp`} alt="Mémoire — pages intérieures" loading="lazy" />
+
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_04.webp`} alt="Typographes — détail typographique 1" loading="lazy" />
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_05.webp`} alt="Typographes — détail typographique 2" loading="lazy" />
+
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_06.webp`} alt="Mémoire — mise en page" loading="lazy" />
+
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_07.webp`} alt="Mémoire — vue d'ensemble" loading="lazy" />
+
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_08.webp`} alt="Typographes — détail 3" loading="lazy" />
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_09.webp`} alt="Typographes — détail 4" loading="lazy" />
+
+  <img src={`${BASE}images/projects/memoire/©franckchabin_TCCT_10.webp`} alt="Mémoire — conclusion" loading="lazy" />
+
+</Project>

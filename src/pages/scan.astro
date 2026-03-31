@@ -1,0 +1,190 @@
+---
+/*
+  PAGE SCAN
+  Galerie photographique avec disposition organique.
+  Les images sont disposées de manière libre (pas une grille stricte)
+  avec des animations de défilement horizontal :
+  - Certaines images glissent vers la droite au scroll
+  - D'autres glissent vers la gauche
+  Cela crée un effet de parallaxe doux.
+
+  POUR AJOUTER DES IMAGES :
+  Dépose tes photos dans /public/images/scan/
+  et ajoute-les dans le tableau `images` ci-dessous.
+*/
+
+import Base from '../layouts/Base.astro';
+import { BASE } from '../config';
+
+// Liste des images de la page Scan
+// direction : 'left' ou 'right' (sens de l'animation au scroll)
+// size : 'small', 'medium', 'large' (taille relative)
+// position : 'left', 'center', 'right' (placement horizontal)
+// Génération automatique à partir des fichiers dans /public/images/scan/
+// Les tailles et positions alternent pour créer un rendu organique
+const sizes = ['small', 'medium', 'large', 'medium', 'small', 'large', 'medium', 'small'] as const;
+const positions = ['left', 'center', 'right', 'right', 'left', 'center', 'left', 'right'] as const;
+const directions = ['right', 'left', 'right', 'left', 'right', 'left', 'right', 'left'] as const;
+
+const scanFiles = [
+  '©franckchabin_scan_001.jpg', '©franckchabin_scan_002.jpg', '©franckchabin_scan_003.jpg',
+  '©franckchabin_scan_004.jpg', '©franckchabin_scan_005.jpg', '©franckchabin_scan_006.jpg',
+  '©franckchabin_scan_007.jpg', '©franckchabin_scan_008.jpg', '©franckchabin_scan_009.jpg',
+  '©franckchabin_scan_010.jpg', '©franckchabin_scan_011.jpg', '©franckchabin_scan_012.jpg',
+  '©franckchabin_scan_013.jpg', '©franckchabin_scan_014.jpg', '©franckchabin_scan_015.jpg',
+  '©franckchabin_scan_016.jpg', '©franckchabin_scan_017.jpg', '©franckchabin_scan_018.jpg',
+  '©franckchabin_scan_019.jpg', '©franckchabin_scan_020.jpg', '©franckchabin_scan_021.jpg',
+  '©franckchabin_scan_022.jpg', '©franckchabin_scan_023.jpg', '©franckchabin_scan_024.jpg',
+  '©franckchabin_scan_025.jpg', '©franckchabin_scan_026.jpg', '©franckchabin_scan_027.jpg',
+  '©franckchabin_scan_028.jpg', '©franckchabin_scan_029.jpg', '©franckchabin_scan_030.jpg',
+  '©franckchabin_scan_031.jpg', '©franckchabin_scan_032.jpg', '©franckchabin_scan_033.jpg',
+  '©franckchabin_scan_034.jpg', '©franckchabin_scan_035.jpg', '©franckchabin_scan_036.jpg',
+  '©franckchabin_scan_037.jpg', '©franckchabin_scan_038.jpg', '©franckchabin_scan_039.jpg',
+  '©franckchabin_scan_040.jpg', '©franckchabin_scan_041.jpg', '©franckchabin_scan_042.jpg',
+  '©franckchabin_scan_043.jpg', '©franckchabin_scan_044.jpg', '©franckchabin_scan_045.jpg',
+];
+
+const images = scanFiles.map((file, i) => ({
+  src: `${BASE}images/scan/${file}`,
+  alt: `Scan ${String(i + 1).padStart(3, '0')}`,
+  direction: directions[i % directions.length],
+  size: sizes[i % sizes.length],
+  position: positions[i % positions.length],
+}));
+---
+
+<Base title="Scan — Franck Chabin" description="Galerie photographique — Scan par Franck Chabin">
+  <section class="scan">
+    <div class="scan-gallery">
+      {images.map((img) => (
+        <div
+          class={`scan-item scan-${img.size} scan-pos-${img.position}`}
+          data-scroll-direction={img.direction}
+        >
+          <img
+            src={img.src}
+            alt={img.alt}
+            loading="lazy"
+          />
+        </div>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .scan {
+    padding: var(--space-lg) 0 var(--space-2xl);
+    overflow: hidden;
+  }
+
+  .scan-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: 0 var(--gutter);
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .scan-item {
+    overflow: hidden;
+    transition: transform 0.1s linear;
+    will-change: transform;
+  }
+
+  .scan-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Tailles */
+  .scan-small {
+    width: clamp(120px, 18vw, 220px);
+  }
+
+  .scan-medium {
+    width: clamp(180px, 25vw, 320px);
+  }
+
+  .scan-large {
+    width: clamp(250px, 35vw, 450px);
+  }
+
+  /* Positionnement pour casser la grille uniforme */
+  .scan-pos-left {
+    align-self: flex-start;
+  }
+
+  .scan-pos-center {
+    align-self: center;
+  }
+
+  .scan-pos-right {
+    align-self: flex-end;
+  }
+
+  /* Ajout de marges aléatoires pour un effet organique */
+  .scan-item:nth-child(3n) {
+    margin-top: var(--space-xl);
+  }
+
+  .scan-item:nth-child(3n+1) {
+    margin-top: var(--space-sm);
+  }
+
+  .scan-item:nth-child(5n) {
+    margin-top: var(--space-lg);
+  }
+
+  /* Mobile : images plus grandes */
+  @media (max-width: 767px) {
+    .scan-small { width: 45%; }
+    .scan-medium { width: 55%; }
+    .scan-large { width: 70%; }
+  }
+</style>
+
+<script>
+  // Animation de parallaxe horizontale au scroll
+  // Les images se décalent légèrement à gauche ou à droite selon data-scroll-direction
+  const scanItems = document.querySelectorAll('.scan-item[data-scroll-direction]');
+
+  if (scanItems.length > 0 && window.matchMedia('(hover: hover)').matches) {
+    let ticking = false;
+
+    function updatePositions() {
+      const scrollY = window.scrollY;
+
+      scanItems.forEach((item) => {
+        const el = item as HTMLElement;
+        const direction = el.dataset.scrollDirection;
+        const rect = el.getBoundingClientRect();
+        const elementCenter = rect.top + rect.height / 2;
+        const windowCenter = window.innerHeight / 2;
+
+        // Calcule le décalage en fonction de la position dans le viewport
+        const distance = (elementCenter - windowCenter) / window.innerHeight;
+        const maxShift = 30; // pixels max de décalage
+        const shift = distance * maxShift * (direction === 'right' ? 1 : -1);
+
+        el.style.transform = `translateX(${shift}px)`;
+      });
+
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updatePositions);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    // Position initiale
+    updatePositions();
+  }
+</script>

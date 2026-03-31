@@ -1,0 +1,331 @@
+---
+import { BASE } from '../config';
+/*
+  Navigation principale
+  - Desktop : tous les liens visibles en ligne
+  - Mobile : menu burger avec overlay plein écran
+  - Fond transparent (l'animation hero passe derrière)
+  - Liens = .btn (interactifs, pill, hover)
+*/
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="nav-header">
+  <nav class="nav" aria-label="Navigation principale">
+    <!-- Liens gauche -->
+    <div class="nav-left">
+      <a
+        href={`${BASE}`}
+        class:list={["btn", { active: currentPath === `${BASE}` }]}
+      >
+        Réalisations
+      </a>
+      <a
+        href="https://www.are.na/l-homme-pizza-franck/channels"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn"
+      >
+        Are.na
+      </a>
+    </div>
+
+    <!-- Liens droite -->
+    <div class="nav-right">
+      <span class="btn nav-disponible">· Disponible</span>
+      <a
+        href={`${BASE}about`}
+        class:list={["btn", { active: currentPath === `${BASE}about/` || currentPath === `${BASE}about` }]}
+      >
+        À propos
+      </a>
+    </div>
+
+    <!-- Bouton burger (mobile uniquement) -->
+    <button
+      class="nav-burger"
+      aria-label="Ouvrir le menu"
+      aria-expanded="false"
+    >
+      <span class="burger-line"></span>
+      <span class="burger-line"></span>
+    </button>
+  </nav>
+
+  <!-- Overlay mobile -->
+  <div class="nav-overlay" aria-hidden="true">
+    <div class="nav-overlay-content">
+
+      <!-- Photo portrait -->
+      <div class="nav-overlay-photo-wrapper">
+        <img
+          src={`${BASE}images/global/portrait.webp`}
+          alt="Franck Chabin"
+          class="nav-overlay-photo"
+          width="150"
+          height="150"
+          draggable="false"
+        />
+      </div>
+
+      <!-- Liens principaux -->
+      <div class="nav-overlay-links">
+        <a href={`${BASE}`} class="btn nav-overlay-btn">Réalisations</a>
+        <a
+          href="https://www.are.na/l-homme-pizza-franck/channels"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn nav-overlay-btn"
+        >
+          Are.na
+        </a>
+        <a href={`${BASE}about`} class="btn nav-overlay-btn">À propos</a>
+      </div>
+
+      <!-- Nom — bas de l'overlay, serif italic -->
+      <p class="nav-overlay-name">Franck Chabin</p>
+
+      <!-- Disponible — sous le nom, grisé -->
+      <span class="btn nav-overlay-disponible">· Disponible</span>
+
+    </div>
+  </div>
+</header>
+
+<style>
+  /* --- Navigation desktop --- */
+  .nav-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-nav);
+    background-color: transparent;
+  }
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Flush left/right — padding réduit aligné avec le contenu */
+    padding: 1.2rem var(--gutter);
+  }
+
+  .nav-left,
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  /* Disponible : bordure pointillée, pas de hover */
+  .nav-disponible {
+    border-style: dashed;
+    cursor: default;
+  }
+
+  .nav-disponible:hover {
+    background-color: transparent;
+    color: var(--color-text);
+  }
+
+  /* --- Burger (caché en desktop) --- */
+  .nav-burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    background-color: var(--color-bg);
+    border: var(--border-width) solid var(--color-text);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    position: relative;
+    z-index: var(--z-nav-burger);
+    transition: background-color var(--transition-fast);
+  }
+
+  .nav-burger:hover {
+    background-color: var(--color-text);
+  }
+
+  .nav-burger:hover .burger-line {
+    background-color: var(--color-bg);
+  }
+
+  .burger-line {
+    width: 100%;
+    height: 1.5px;
+    background-color: var(--color-text);
+    transition: background-color var(--transition-fast), transform var(--transition-medium);
+  }
+
+  /* --- Overlay mobile --- */
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-nav-overlay);
+    background-color: var(--color-bg);
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-medium);
+  }
+
+  .nav-overlay.is-open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .nav-overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    /* même hauteur que la hero (1.2rem du haut), blanc égal en bas */
+    padding: 1.2rem var(--gutter) 1.2rem;
+  }
+
+  /* Photo portrait — même taille que les images hero trail */
+  .nav-overlay-photo-wrapper {
+    width: var(--img-ref-size);
+    height: var(--img-ref-size);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .nav-overlay-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Liens principaux — centrés dans l'espace disponible */
+  .nav-overlay-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex: 1; /* occupe tout l'espace entre la photo et le nom */
+  }
+
+  .nav-overlay-btn {
+    font-size: 1.4rem;
+    padding: 0.25em 1.2em;
+  }
+
+  /* Nom — juste après les liens, en bas naturellement */
+  .nav-overlay-name {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.5rem;
+    font-weight: normal;
+    color: var(--color-text);
+  }
+
+  /* Disponible — sous le nom, grisé */
+  .nav-overlay-disponible {
+    border-style: dashed;
+    cursor: default;
+    margin-top: 0.6rem;
+    opacity: 0.35;
+    font-size: 1.1rem;
+  }
+
+  .nav-overlay-disponible:hover {
+    background-color: transparent;
+    color: var(--color-text);
+  }
+
+  /* Burger ouvert : X */
+  .nav-burger[aria-expanded="true"] {
+    background-color: var(--color-text);
+  }
+
+  .nav-burger[aria-expanded="true"] .burger-line {
+    background-color: var(--color-bg);
+  }
+
+  .nav-burger[aria-expanded="true"] .burger-line:first-child {
+    transform: rotate(45deg) translate(2px, 2px);
+  }
+
+  .nav-burger[aria-expanded="true"] .burger-line:last-child {
+    transform: rotate(-45deg) translate(2px, -2px);
+  }
+
+  /* --- Responsive : tablette — boutons empilés --- */
+  @media (max-width: 1024px) and (min-width: 768px) {
+    .nav {
+      align-items: flex-start;
+    }
+    .nav-left,
+    .nav-right {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .nav-left { align-items: flex-start; }
+    .nav-right { align-items: flex-end; }
+  }
+
+  /* --- Responsive : mobile — burger --- */
+  @media (max-width: 767px) {
+    .nav-left,
+    .nav-right {
+      display: none;
+    }
+
+    .nav-burger {
+      display: flex;
+    }
+
+    /* Seul enfant visible : aligner à droite */
+    .nav {
+      justify-content: flex-end;
+    }
+  }
+</style>
+
+<script>
+  // Mesure la hauteur réelle de la nav et l'expose en variable CSS
+  const navHeader = document.querySelector('.nav-header') as HTMLElement;
+  if (navHeader) {
+    const setNavHeight = () => {
+      document.documentElement.style.setProperty('--nav-height', `${navHeader.offsetHeight}px`);
+    };
+    setNavHeight();
+    window.addEventListener('resize', setNavHeight);
+  }
+
+  // Menu burger mobile
+  const burger = document.querySelector('.nav-burger');
+  const overlay = document.querySelector('.nav-overlay');
+
+  if (burger && overlay) {
+    burger.addEventListener('click', () => {
+      const isOpen = burger.getAttribute('aria-expanded') === 'true';
+      burger.setAttribute('aria-expanded', String(!isOpen));
+      burger.setAttribute('aria-label', isOpen ? 'Ouvrir le menu' : 'Fermer le menu');
+      overlay.classList.toggle('is-open');
+      overlay.setAttribute('aria-hidden', String(isOpen));
+      document.body.style.overflow = isOpen ? '' : 'hidden';
+    });
+
+    overlay.querySelectorAll('.nav-overlay-btn').forEach(link => {
+      link.addEventListener('click', () => {
+        burger.setAttribute('aria-expanded', 'false');
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      });
+    });
+  }
+</script>

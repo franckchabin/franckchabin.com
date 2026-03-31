@@ -1,0 +1,22 @@
+# Dépendances
+node_modules/
+
+# Build Astro
+dist/
+.astro/
+
+# Vidéos (trop lourdes pour GitHub)
+public/videos/
+*.mp4
+*.mov
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Claude
+.claude/

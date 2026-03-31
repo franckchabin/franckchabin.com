@@ -1,0 +1,90 @@
+---
+import { BASE } from '../config';
+/*
+  Carte projet — grille homepage
+  Layout : image/vidéo → titre → tags (ferrés à droite)
+  Pas de hover, zoom, ou halo. Tags passifs (classe .tag).
+*/
+
+interface Props {
+  title: string;
+  slug: string;
+  tags: string[];
+  image?: string;
+  video?: string;
+}
+
+const { title, slug, tags, image, video } = Astro.props;
+---
+
+<a href={`${BASE}${slug}`} class="project-card">
+  <div class="project-card-media">
+    {video ? (
+      <video data-src={video} autoplay loop muted playsinline preload="none" class="project-card-visual" />
+    ) : image ? (
+      <img src={image} alt={`Projet ${title}`} loading="lazy" class="project-card-visual" />
+    ) : null}
+  </div>
+
+  <div class="project-card-info">
+    <h3 class="project-card-title">{title}</h3>
+    <div class="project-card-tags">
+      {tags.map(tag => <span class="tag">{tag}</span>)}
+    </div>
+  </div>
+</a>
+
+<style>
+  .project-card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .project-card-media {
+    width: 100%;
+  }
+
+  .project-card-visual {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /*
+     Desktop : titre à gauche, tags à droite, même ligne.
+     Si manque de place : tags passent en-dessous, alignés à gauche.
+     flex-grow:1 sur le titre pousse les tags à droite quand ils
+     tiennent sur la même ligne. flex-wrap:wrap les fait passer
+     à la ligne suivante (alignés à gauche par défaut) si nécessaire.
+  */
+  .project-card-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    column-gap: 0.75rem;
+    row-gap: 0.55rem;
+    padding-top: 0.75rem;
+  }
+
+  .project-card-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 2.5vw, 2.2rem);
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1.1;
+    flex: 1 0 auto; /* grandit pour remplir, ne rétrécit pas, basis = largeur du texte */
+  }
+
+  .project-card-tags {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    /* Pas de margin-left: auto ni justify-content: flex-end —
+       quand les tags wrappent, ils sont naturellement à gauche */
+  }
+
+  .project-card-tags .tag {
+    font-size: 0.8rem;
+  }
+</style>

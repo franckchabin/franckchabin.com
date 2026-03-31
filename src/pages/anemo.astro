@@ -1,0 +1,51 @@
+---
+import { BASE } from '../config';
+/*
+  PAGE PROJET : Anemo
+  Conception d'interface et 3D pour une application météo.
+*/
+import Project from '../layouts/Project.astro';
+---
+
+<Project
+  title="Anemo"
+  description='"Le temps dure longtemps." Anemo est une application météo qui transforme l&apos;expérience utilisateur en un voyage visuel à travers le temps. Grâce à une scrollbar interactive située en bas de l&apos;écran, il est facile de naviguer dans le temps et de consulter les prévisions horaires et journalières. Avec ses pictogrammes 3D, Anemo propose une approche à la fois belle et fonctionnelle.'
+  tags={["Conception d'interface mobile", "3D"]}
+  sideInfo="<strong>Polices de caractère :</strong><br/><br/>San Francisco par Apple"
+  nextProject={{ title: "Typographes créateurs de caractères et typodiversité", slug: "typographes-createurs-de-caracteres-et-typodiversite", thumbnail: "images/projects/memoire/©franckchabin_TCCT_02.webp" }}
+>
+
+  <!-- Vidéo principale (présentation de l'app) -->
+  <video
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1719967321/%C2%A9franckchabin_Anemo_01_1280.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img src={`${BASE}images/projects/anemo/©franckchabin_ANEMO_02.webp`} alt="Anemo — écran d'accueil" loading="lazy" />
+
+  <img src={`${BASE}images/projects/anemo/©franckchabin_ANEMO_03.webp`} alt="Anemo — détail interface" loading="lazy" />
+
+  <!-- Vidéo interaction -->
+  <video
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1719171662/%C2%A9franckchabin_ANEMO_04.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img src={`${BASE}images/projects/anemo/©franckchabin_ANEMO_05.webp`} alt="Anemo — vue météo" loading="lazy" />
+
+  <img src={`${BASE}images/projects/anemo/©franckchabin_ANEMO_06.webp`} alt="Anemo — rendu 3D" loading="lazy" />
+
+  <img src={`${BASE}images/projects/anemo/©franckchabin_ANEMO_07.webp`} alt="Anemo — composants UI" loading="lazy" />
+
+  <!-- Vidéo animation -->
+  <video
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1719171662/%C2%A9franckchabin_ANEMO_08.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img src={`${BASE}images/projects/anemo/©franckchabin_ANEMO_09.webp`} alt="Anemo — écran complet" loading="lazy" />
+
+  <img src={`${BASE}images/projects/anemo/©franckchabin_ANEMO_10.webp`} alt="Anemo — détail 1" loading="lazy" />
+  <img src={`${BASE}images/projects/anemo/©franckchabin_ANEMO_11.webp`} alt="Anemo — détail 2" loading="lazy" />
+
+</Project>

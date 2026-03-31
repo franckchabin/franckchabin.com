@@ -1,0 +1,387 @@
+---
+/*
+  LAYOUT PROJET
+  Structure :
+  1. Titre (h1, centré, pleine largeur)
+  2. Séparateur horizontal
+  3. .project-body : 3 colonnes sur desktop (vide | contenu | vide)
+     — colonne centrale : description + tags + galerie + infos complémentaires
+  4. "Projet suivant" — bouton .btn pill en bas à gauche
+*/
+
+import Base from './Base.astro';
+import { BASE } from '../config';
+
+interface Props {
+  title: string;
+  description: string;
+  tags: string[];
+  sideInfo?: string;
+  nextProject?: {
+    title: string;
+    slug: string;
+    thumbnail?: string;
+  };
+}
+
+const { title, description, tags, sideInfo, nextProject } = Astro.props;
+---
+
+<Base title={`${title} — Franck Chabin`} description={description}>
+  <article class="project">
+
+    <!-- Titre -->
+    <header class="project-header container">
+      <h1 class="project-title">{title}</h1>
+    </header>
+
+    <!-- Séparateur -->
+    <hr class="project-separator container" />
+
+    <!--
+      Layout 3 colonnes sur desktop : vide | contenu centré | vide.
+      Colonne centrale = description + galerie + infos complémentaires.
+      Mobile : tout empilé naturellement.
+    -->
+    <div class="project-body container">
+
+      <div class="project-main">
+        <div class="project-description">
+          <p>{description}</p>
+          <div class="project-tags">
+            {tags.map(tag => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        </div>
+
+        <!-- Galerie -->
+        <section class="project-gallery" aria-label="Galerie">
+          <slot />
+        </section>
+
+        <!-- Infos complémentaires (sous les images) -->
+        {sideInfo && (
+          <aside class="project-side-info">
+            <Fragment set:html={sideInfo} />
+          </aside>
+        )}
+      </div>
+
+    </div>
+
+    <!-- Navigation projet suivant -->
+    {nextProject && (
+      <>
+        <section class="project-end-cap" aria-hidden="true"></section>
+        <section class="project-next-section" data-overscroll-theme="#1a1a1a">
+          <div class="project-next-frame">
+            <nav class="project-next" aria-label="Projet suivant">
+              <a href={`${BASE}${nextProject.slug}`} class="project-next-body">
+                <div class="project-next-inner">
+                  <div class="project-next-text">
+                    <span class="btn btn--footer">Projet suivant</span>
+                    <span class="project-next-title">{nextProject.title}</span>
+                  </div>
+                  {nextProject.thumbnail && (
+                    <div class="project-next-thumb">
+                      <img src={`${BASE}${nextProject.thumbnail}`} alt={nextProject.title} loading="lazy" />
+                    </div>
+                  )}
+                </div>
+              </a>
+            </nav>
+          </div>
+          <div class="project-footer-separator container" aria-hidden="true">
+            <span></span>
+          </div>
+        </section>
+      </>
+    )}
+
+  </article>
+</Base>
+
+<style>
+  .project {
+  }
+
+  /* --- Titre --- */
+  .project-header {
+    padding-top: calc(var(--nav-height) + var(--space-xl));
+    padding-bottom: var(--space-md);
+  }
+
+  .project-title {
+    font-family: var(--font-serif);
+    font-weight: normal;
+    font-size: clamp(5rem, 10vw, 8rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-align: center;
+  }
+
+  /* --- Séparateur --- */
+  .project-separator {
+    height: 1px;
+    background-color: var(--color-border);
+    border: none;
+    margin: 0;
+  }
+
+  /* =============================================
+     BODY : conteneur 3 colonnes (desktop)
+     Mobile : empilé — tout en une seule colonne
+     ============================================= */
+  .project-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-lg);
+  }
+
+  /* --- Infos complémentaires (sous les images) --- */
+  .project-side-info {
+    font-family: var(--font-serif);
+    font-size: clamp(1.25rem, 2vw, 1.6rem);
+    line-height: 1.5;
+    color: var(--color-text-light);
+    margin-top: var(--space-lg);
+  }
+
+  /* --- Description --- */
+  .project-description {
+    padding-bottom: var(--space-lg);
+  }
+
+  .project-description p {
+    font-family: var(--font-serif);
+    font-size: clamp(1.25rem, 2vw, 1.6rem);
+    line-height: 1.5;
+    hyphens: none;
+    -webkit-hyphens: none;
+  }
+
+  .project-tags {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-md);
+  }
+
+  .project-tags .tag {
+    font-size: 0.8rem;
+  }
+
+  /* --- Galerie --- */
+  .project-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .project-gallery :global(img),
+  .project-gallery :global(video) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-card);
+    display: block;
+  }
+
+  /* Pas de fond derrière les images */
+  .project-gallery :global(.gallery-bg) {
+    background: none;
+    padding: 0;
+    display: block;
+  }
+
+  /* --- Projet suivant --- */
+  .project-end-cap {
+    --project-end-radius: clamp(12px, 1.6vw, 18px);
+    position: relative;
+    z-index: 1;
+    margin-top: var(--space-xl);
+    min-height: clamp(2.5rem, 6vw, 4.5rem);
+    background-color: var(--color-bg);
+  }
+
+  .project-end-cap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(-1 * var(--project-end-radius));
+    height: calc(var(--project-end-radius) * 2);
+    background-color: var(--color-bg);
+    border-bottom-left-radius: var(--project-end-radius);
+    border-bottom-right-radius: var(--project-end-radius);
+    pointer-events: none;
+  }
+
+  .project-next-section {
+    --project-next-gap: clamp(1.75rem, 3vw, 2.5rem);
+    padding: calc(var(--project-next-gap) + var(--project-end-radius)) 0 0;
+    background-color: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  .project-next-frame {
+    width: min(calc(100% - (var(--gutter) * 2)), var(--gallery-max));
+    margin: 0 auto;
+  }
+
+  .project-next {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .project-footer-separator {
+    margin-top: var(--project-next-gap);
+  }
+
+  .project-footer-separator span {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Zone noire — lien cliquable, fond TOUJOURS noir */
+  .project-next-body {
+    display: block;
+    background-color: transparent;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Hover : opacité sur le contenu uniquement, pas sur le fond */
+  @media (hover: hover) {
+    .project-next-inner {
+      opacity: 0.60;
+      transition: opacity var(--transition-medium);
+    }
+    .project-next-body:hover .project-next-inner {
+      opacity: 1;
+    }
+    /* Bouton s'inverse au hover de la section */
+    .project-next-body:hover .btn--footer {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      border-color: var(--color-text);
+    }
+  }
+
+  /* Bouton variante footer : fond noir, texte blanc, bordure blanche */
+  .btn--footer {
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    border-color: var(--color-bg);
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+
+  /* Contenu intérieur — desktop */
+  .project-next-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+    padding: clamp(1.75rem, 3vw, 2.75rem) 0;
+  }
+
+  .project-next-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .project-next-title {
+    font-family: var(--font-serif);
+    font-weight: normal;
+    font-size: clamp(3rem, 6.5vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-bg);
+    text-wrap: balance;
+  }
+
+  /* Thumbnail sans crop — ratio naturel conservé */
+  .project-next-thumb {
+    flex: 0 0 clamp(140px, 22vw, 280px);
+  }
+
+  .project-next-thumb img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-card);
+  }
+
+  /* Mobile : section plein écran, 3 éléments distribués verticalement */
+  @media (max-width: 767px) {
+    .project-end-cap {
+      min-height: var(--space-lg);
+      margin-top: var(--space-lg);
+    }
+
+    .project-next-section {
+      padding-top: calc(var(--space-lg) + var(--project-end-radius));
+    }
+
+    .project-next-frame {
+    }
+
+    .project-next-inner {
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-evenly;
+      min-height: 100dvh;
+      gap: 0;
+    }
+
+    /* display:contents rend btn et titre des flex items directs */
+    .project-next-text {
+      display: contents;
+    }
+
+    .project-next-title {
+      text-align: center;
+    }
+
+    .project-next-thumb {
+      flex: 0 0 auto;
+      width: 70%;
+    }
+  }
+
+  /* =============================================
+     DESKTOP : 3 colonnes centrées
+     vide | contenu (gallery-max) | vide
+     ============================================= */
+  @media (min-width: 960px) {
+    .project-header {
+      padding-bottom: var(--space-lg);
+      padding-top: calc(var(--nav-height) + var(--space-md));
+    }
+
+    .project-body {
+      grid-template-columns: 1fr minmax(0, var(--gallery-max)) 1fr;
+      padding-top: var(--space-lg);
+    }
+
+    /* Contenu centré dans la colonne 2 */
+    .project-main {
+      grid-column: 2;
+    }
+
+    .project-end-cap {
+      margin-top: var(--space-2xl);
+    }
+  }
+</style>

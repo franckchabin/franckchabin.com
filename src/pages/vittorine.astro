@@ -1,0 +1,37 @@
+---
+import { BASE } from '../config';
+/*
+  PAGE PROJET : Vittorine
+  Objet éditorial et dessin de caractères — journal/broadsheet.
+*/
+import Project from '../layouts/Project.astro';
+---
+
+<Project
+  title="Vittorine"
+  description="Une page Wikipédia aléatoire a inspiré la création de Vittorine, une police de caractères basée sur la Juventus Football Club. Elle incarne l'esprit, l'agressivité et la détermination qui sont la marque de fabrique de la Juve. Sa hauteur de lettres imposante et son design sont harmonisés avec les bandes noires et blanches emblématiques du logo et du maillot de l'équipe, capturant le style distinctif du club italien."
+  tags={["Objet éditorial", "Rédaction", "Iconographie"]}
+  nextProject={{ title: "75000", slug: "75000", thumbnail: "images/projects/75000/©franckchabin_75000_04.webp" }}
+>
+
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_01.webp`} alt="Vittorine — vue du broadsheet" loading="lazy" />
+
+  <!-- Vidéo de présentation -->
+  <video
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720371590/%C2%A9franckchabin_Vittorine_02.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_02_poster.webp`} alt="Vittorine — poster typographique" loading="lazy" />
+
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_03.webp`} alt="Vittorine — détail typographie" loading="lazy" />
+
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_04.webp`} alt="Vittorine — mise en page 1" loading="lazy" />
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_05.webp`} alt="Vittorine — mise en page 2" loading="lazy" />
+
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_06.gif`} alt="Vittorine — animation" loading="lazy" />
+
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_07.webp`} alt="Vittorine — détail 1" loading="lazy" />
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_08.webp`} alt="Vittorine — détail 2" loading="lazy" />
+
+</Project>

@@ -42,6 +42,7 @@
   --radius-pill:   50px;  /* Boutons interactifs (nav, CTA) */
   --radius-tag:    6px;   /* Tags passifs (catégories, labels) */
   --radius-card:   2px;
+  --radius-media:  4px;   /* Arrondis images/vidéos dans les galeries projet */
 
   /* Hauteur nav (fallback — écrasée par JS dans Nav.astro) */
   --nav-height: 60px;
@@ -147,6 +148,15 @@ video {
   max-width: 100%;
   height: auto;
   display: block;
+}
+
+/* Fade-in au scroll — appliqué par JS via IntersectionObserver */
+.fade-in-media {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.fade-in-media.is-visible {
+  opacity: 1;
 }
 
 /* ============================================

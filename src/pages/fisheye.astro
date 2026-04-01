@@ -15,21 +15,29 @@ import Project from '../layouts/Project.astro';
   nextProject={{ title: "Anemo", slug: "anemo", thumbnail: "images/projects/anemo/©franckchabin_ANEMO_02.webp" }}
 >
 
-  <img src={`${BASE}images/projects/fisheye/©franckchabin_Fisheye_01_poster.webp`} alt="Fisheye — affiche Prix de la Création Visuelle" loading="lazy" />
+  <!-- Vidéo showreel (avec controls, pas autoplay) -->
+  <video
+    preload="auto"
+    controls
+    playsinline
+    poster={`${BASE}images/projects/fisheye/©franckchabin_Fisheye_01_poster.webp`}
+    style="width:100%; display:block;"
+  >
+    <source src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1720743025/%C2%A9franckchabin_Fisheye_showreel.mp4" type="video/mp4" />
+  </video>
 
   <img src={`${BASE}images/projects/fisheye/©franckchabin_Fisheye_02.webp`} alt="Fisheye — déclinaison visuelle" loading="lazy" />
 
-  <!-- Vidéo showreel -->
+  <!-- Vidéo motion (avec controls, pas autoplay) -->
   <video
-    data-src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1720743025/%C2%A9franckchabin_Fisheye_showreel.mp4"
-    autoplay loop muted playsinline preload="none"
-  ></video>
-
-  <!-- Vidéo motion -->
-  <video
-    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720753437/%C2%A9franckchabin_Fisheye_03.mp4"
-    autoplay loop muted playsinline preload="none"
-  ></video>
+    preload="auto"
+    controls
+    playsinline
+    poster="https://res.cloudinary.com/db5vnijzw/video/upload/v1720753437/%C2%A9franckchabin_Fisheye_03.jpg"
+    style="width:100%; display:block;"
+  >
+    <source src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720753437/%C2%A9franckchabin_Fisheye_03.mp4" type="video/mp4" />
+  </video>
 
   <img src={`${BASE}images/projects/fisheye/©franckchabin_Fisheye_04.gif`} alt="Fisheye — animation" loading="lazy" />
 

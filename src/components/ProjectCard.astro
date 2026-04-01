@@ -15,12 +15,15 @@ interface Props {
 }
 
 const { title, slug, tags, image, video } = Astro.props;
+
+// Génère un poster Cloudinary à partir de l'URL vidéo (.mp4 → .jpg)
+const videoPoster = video ? video.replace(/\.mp4$/, '.jpg') : undefined;
 ---
 
 <a href={`${BASE}${slug}`} class="project-card">
   <div class="project-card-media">
     {video ? (
-      <video data-src={video} autoplay loop muted playsinline preload="none" class="project-card-visual" />
+      <video data-src={video} poster={videoPoster} autoplay loop muted playsinline preload="none" class="project-card-visual" />
     ) : image ? (
       <img src={image} alt={`Projet ${title}`} loading="lazy" class="project-card-visual" />
     ) : null}
@@ -49,6 +52,7 @@ const { title, slug, tags, image, video } = Astro.props;
     width: 100%;
     height: auto;
     display: block;
+    border-radius: var(--radius-media);
   }
 
   /*

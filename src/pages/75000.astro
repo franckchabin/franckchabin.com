@@ -30,25 +30,11 @@ import Project from '../layouts/Project.astro';
     - class="gallery-bg"  → image centrée sur fond coloré
   -->
 
-  <!-- Image pleine largeur : vue des cartes -->
-  <img
-    src={`${BASE}images/projects/75000/©franckchabin_75000_04.webp`}
-    alt="Vue d'ensemble des cartes 75000 colorées"
-    loading="lazy"
-  />
-
-  <!-- Vidéo 1 : animation des cartes -->
+  <!-- Vidéo 1 -->
   <video
     data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720147939/%C2%A9franckchabin_75000_01.mp4"
     autoplay loop muted playsinline preload="none"
   ></video>
-
-  <!-- Détail des cartes -->
-  <img
-    src={`${BASE}images/projects/75000/©franckchabin_75000_05.webp`}
-    alt="Détails des cartes de rues parisiennes"
-    loading="lazy"
-  />
 
   <!-- Vidéo 2 -->
   <video
@@ -56,11 +42,31 @@ import Project from '../layouts/Project.astro';
     autoplay loop muted playsinline preload="none"
   ></video>
 
+  <!-- Vidéo 3 -->
+  <video
+    data-src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1722289333/%C2%A9franckchabin_75000_03.mp4"
+    autoplay loop muted playsinline preload="none"
+  ></video>
+
+  <img
+    src={`${BASE}images/projects/75000/©franckchabin_75000_04.webp`}
+    alt="Vue d'ensemble des cartes 75000 colorées"
+    loading="lazy"
+  />
+
+  <img
+    src={`${BASE}images/projects/75000/©franckchabin_75000_05.webp`}
+    alt="Détails des cartes de rues parisiennes"
+    loading="lazy"
+  />
+
+  <!-- Image longue -->
   <img
     src={`${BASE}images/projects/75000/©franckchabin_75000_06.webp`}
     alt="Carte de rue en gros plan"
     loading="lazy"
   />
+
   <img
     src={`${BASE}images/projects/75000/©franckchabin_75000_07.webp`}
     alt="Boîtier du jeu 75000"
@@ -76,12 +82,6 @@ import Project from '../layouts/Project.astro';
       style="max-width: 80%;"
     />
   </div>
-
-  <!-- Vidéo 3 -->
-  <video
-    data-src="https://res.cloudinary.com/dqjhw8zd6/video/upload/v1722289333/%C2%A9franckchabin_75000_03.mp4"
-    autoplay loop muted playsinline preload="none"
-  ></video>
 
 </Project>
 

@@ -132,7 +132,7 @@ const projects = [
   </section>
 
   <!-- ===== GRILLE PROJETS ===== -->
-  <section class="projects-section">
+  <section id="projets" class="projects-section">
     <div class="container">
       <div class="projects-grid">
         {projects.map(project => (
@@ -180,6 +180,7 @@ const projects = [
     pointer-events: none;
     user-select: none;
     will-change: transform, opacity;
+    border-radius: var(--radius-media);
   }
 
   /* --- Contenu du hero — AU-DESSUS du trail --- */
@@ -206,6 +207,7 @@ const projects = [
     height: var(--img-ref-size);
     flex-shrink: 0;
     overflow: hidden;
+    border-radius: var(--radius-media);
   }
 
   .hero-photo {

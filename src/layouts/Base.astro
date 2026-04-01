@@ -42,6 +42,10 @@ const {
   <!-- Préchargement police custom (évite le flash FOUT) -->
   <link rel="preload" as="font" type="font/woff" href={`${BASE}fonts/maria-unconnected.woff`} crossorigin />
 
+  <!-- Connexion anticipée au CDN vidéo Cloudinary -->
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+  <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+
   <!-- Polices Google Fonts — display=block évite le flash de substitution -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -70,6 +74,13 @@ const {
       const videos = Array.from(document.querySelectorAll('video[data-src]')) as HTMLVideoElement[];
 
       if (videos.length) {
+        // Génère un poster Cloudinary pour les vidéos qui n'en ont pas
+        videos.forEach(v => {
+          if (!v.poster && v.dataset.src) {
+            v.poster = v.dataset.src.replace(/\.mp4$/, '.jpg');
+          }
+        });
+
         const io = new IntersectionObserver((entries) => {
           entries.forEach(e => {
             if (e.isIntersecting) {
@@ -82,9 +93,31 @@ const {
               io.unobserve(v);
             }
           });
-        }, { rootMargin: '0px', threshold: 0.1 });
+        }, { rootMargin: '400px 0px', threshold: 0 });
 
         videos.forEach(v => io.observe(v));
+      }
+
+      // Fade-in au scroll pour images et vidéos dans les galeries/grilles
+      const fadeTargets = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          '.project-card-visual, .project-gallery > img, .project-gallery > video, .project-gallery > .gallery-bg, .project-gallery > .gallery-row img'
+        )
+      );
+
+      if (fadeTargets.length) {
+        fadeTargets.forEach(el => el.classList.add('fade-in-media'));
+
+        const fadeObserver = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              (e.target as HTMLElement).classList.add('is-visible');
+              fadeObserver.unobserve(e.target);
+            }
+          });
+        }, { rootMargin: '200px 0px', threshold: 0 });
+
+        fadeTargets.forEach(el => fadeObserver.observe(el));
       }
 
       const overscrollTargets = Array.from(document.querySelectorAll<HTMLElement>('[data-overscroll-theme]'));

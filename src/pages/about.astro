@@ -1,13 +1,13 @@
 ---
 import { BASE } from '../config';
 /*
-  PAGE À PROPOS
-  Recomposition de la page d'après la maquette :
-  - introduction centrée
-  - bloc contact centré
-  - liens sociaux
-  - expertises / logiciels
-  - signature en bas de page
+  PAGE À PROPOS — v15
+  - Hero : photo centrée
+  - Intro : centré pleine largeur, signature
+  - CTA : border-top, images
+  - Expertises / Parcours / Formation / Outils : même ferrage, sections resserrées
+  - Bouton CV + liens sociaux en bas
+  - End cap + dark footer
 */
 
 import Base from '../layouts/Base.astro';
@@ -17,200 +17,673 @@ const services = [
   "Objets d'édition",
   'Identités visuelles',
   'Dessin de caractères',
-  "Conception d'interfaces Web",
-  'Direction artistique 360',
+  "Interfaces Web",
+  'Direction artistique',
 ];
 
 const software = [
   'Photoshop',
   'Illustrator',
   'InDesign',
+  'Première Pro',
+  'After Effects',
   'Figma',
   'Webflow',
-  'After Effect',
-  'Premiere Pro',
   'Glyphs 3',
   'Cinema 4D',
   'Octane Render',
+  'Notion',
+  'Claude Code',
+];
+
+const parcours = [
+  {
+    company: 'PICTO',
+    role: 'Concepteur Graphique · CDI',
+    period: '2025 — Auj.',
+  },
+  {
+    company: 'Freelance',
+    role: 'DA & Graphiste',
+    period: '2024 — Auj.',
+  },
+  {
+    company: 'Fisheye Magazine',
+    role: 'Concepteur Graphique · Alternance',
+    period: '2022 — 2023',
+  },
+  {
+    company: 'UZIK',
+    role: 'Directeur Artistique · Alternance',
+    period: '2021 — 2022',
+  },
+  {
+    company: 'Rébellion',
+    role: 'DA Junior · Stage',
+    period: '2020',
+  },
+];
+
+const formation = [
+  {
+    title: 'Auto-formation créative',
+    school: 'Autodidacte',
+    period: '2024',
+  },
+  {
+    title: 'Mastère Dir. Artistique Numérique',
+    school: 'LISAA, Paris',
+    period: '2021 — 2023',
+  },
+  {
+    title: 'Bachelor Concepteur Graphique',
+    school: 'LISAA, Paris',
+    period: '2019 — 2021',
+  },
+  {
+    title: 'Bac Pro Communication Visuelle',
+    school: 'St Martin, Palaiseau',
+    period: '2016 — 2019',
+  },
 ];
 ---
 
 <Base title="À propos — Franck Chabin">
-  <section class="about">
+
+  <!-- ===== HERO ===== -->
+  <section class="a-hero">
     <div class="container">
-      <div class="about-shell">
-        <div class="about-intro">
-          <p>Je m&apos;appelle Franck, créatif indépendant basé à Paris, et grand amateur de pizzas.</p>
-          <p>Inspiré par les objets imprimés autant que par la culture numérique, j&apos;aime naviguer entre ces deux univers pour voir comment ils peuvent se compléter naturellement.</p>
-          <p>Je travaille sur des projets variés, de l&apos;identité visuelle à l&apos;édition en passant par le digital et le motion, avec une approche simple : m&apos;adapter rapidement, comprendre les enjeux et proposer des réponses justes, toujours avec une vraie attention aux détails.</p>
-        </div>
-
-        <div class="about-contact">
-          <h2 class="about-heading about-heading--contact">On travaille ensemble ?</h2>
-          <a href="mailto:franck.chabin@icloud.com" class="btn about-email">
-            franck.chabin@icloud.com
-          </a>
-        </div>
-
-        <div class="about-links" aria-label="Liens externes">
-          <a href="https://www.linkedin.com/in/franckchabin/" target="_blank" rel="noopener noreferrer" class="btn">LinkedIn</a>
-          <a href={`${BASE}cv.pdf`} target="_blank" rel="noopener noreferrer" class="btn">CV</a>
-          <a href="https://www.behance.net/franckchabin" target="_blank" rel="noopener noreferrer" class="btn">Behance</a>
-        </div>
-
-        <div class="about-columns">
-          <div class="about-column">
-            <h2 class="about-heading">Expertises</h2>
-            <div class="about-tags">
-              {services.map(s => <span class="tag">{s}</span>)}
-            </div>
-          </div>
-
-          <div class="about-column">
-            <h2 class="about-heading">Compétences logicielles</h2>
-            <div class="about-tags">
-              {software.map(s => <span class="tag">{s}</span>)}
-            </div>
-          </div>
-        </div>
- 
-        <p class="about-signoff">
-          Raconter une histoire par la couleur et la forme pour faire sourire les yeux de son public.
-        </p>
+      <div class="a-hero-photo">
+        <img
+          src={`${BASE}images/global/portrait.webp`}
+          alt="Franck Chabin"
+          class="a-hero-img"
+          width="150"
+          height="150"
+          draggable="false"
+        />
       </div>
     </div>
   </section>
+
+  <!-- ===== INTRO ===== -->
+  <section class="a-intro">
+    <div class="container">
+      <div class="a-intro-inner">
+        <p class="a-intro-text">
+          Curieux et passionné, j&apos;aime naviguer entre
+          les <span class="u">objets imprimés</span> et la <span class="u">culture numérique</span>
+          pour voir comment ces deux univers
+          peuvent se compléter naturellement.
+        </p>
+        <p class="a-signature">
+          <span class="a-signature-name">Franck Chabin</span>
+          <span class="a-signature-sep">&mdash;</span>
+          <span class="a-signature-role">Dir. artistique &amp; concepteur graphique, Paris</span>
+        </p>
+        <div class="a-intro-links">
+          <a href="https://www.linkedin.com/in/franckchabin/" target="_blank" rel="noopener noreferrer" class="btn">LinkedIn</a>
+          <a href="https://www.behance.net/franckchabin" target="_blank" rel="noopener noreferrer" class="btn">Behance</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA ===== -->
+  <section class="a-cta">
+    <div class="a-cta-images" aria-hidden="true">
+      <img src={`${BASE}images/hover/hero-hover-003.webp`} alt="" class="a-cta-deco a-cta-deco--1" draggable="false" />
+      <img src={`${BASE}images/hover/hero-hover-007.webp`} alt="" class="a-cta-deco a-cta-deco--2" draggable="false" />
+      <img src={`${BASE}images/hover/hero-hover-012.webp`} alt="" class="a-cta-deco a-cta-deco--3" draggable="false" />
+      <img src={`${BASE}images/hover/hero-hover-015.webp`} alt="" class="a-cta-deco a-cta-deco--4" draggable="false" />
+      <img src={`${BASE}images/hover/hero-hover-009.webp`} alt="" class="a-cta-deco a-cta-deco--5" draggable="false" />
+    </div>
+    <div class="container">
+      <div class="a-cta-inner">
+        <p class="a-cta-heading">On travaille ensemble&nbsp;?</p>
+        <a href="mailto:franck.chabin@icloud.com" class="btn a-cta-btn">
+          franck.chabin@icloud.com
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTENU — sections resserrées ===== -->
+  <div class="a-content">
+
+    <!-- Expertises -->
+    <section class="a-block">
+      <div class="container">
+        <div class="a-block-grid">
+          <span class="a-label">Expertises</span>
+          <div class="a-list">
+            {services.map((s, i) => (
+              <div class="a-list-item">
+                <span class="a-list-key">{String(i + 1).padStart(2, '0')}</span>
+                <span class="a-list-value">{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Parcours -->
+    <section class="a-block">
+      <div class="container">
+        <div class="a-block-grid">
+          <span class="a-label">Parcours</span>
+          <div class="a-list">
+            {parcours.map(p => (
+              <div class="a-list-item">
+                <span class="a-list-key">
+                  {p.period.includes(' — ') ? (
+                    <>
+                      <span>{p.period.split(' — ')[0]}</span>
+                      <span class="a-list-key-end">— {p.period.split(' — ')[1]}</span>
+                    </>
+                  ) : p.period}
+                </span>
+                <span class="a-list-value">{p.company}<span class="a-list-sub"> — {p.role}</span></span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formation -->
+    <section class="a-block">
+      <div class="container">
+        <div class="a-block-grid">
+          <span class="a-label">Formation</span>
+          <div class="a-list">
+            {formation.map(f => (
+              <div class="a-list-item">
+                <span class="a-list-key">
+                  {f.period.includes(' — ') ? (
+                    <>
+                      <span>{f.period.split(' — ')[0]}</span>
+                      <span class="a-list-key-end">— {f.period.split(' — ')[1]}</span>
+                    </>
+                  ) : f.period}
+                </span>
+                <span class="a-list-value">{f.title}<span class="a-list-sub"> — {f.school}</span></span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Outils -->
+    <section class="a-block">
+      <div class="container">
+        <div class="a-block-grid">
+          <span class="a-label">Outils</span>
+          <div class="a-tags-list">
+            {software.map(s => <span class="tag">{s}</span>)}
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== CV ===== -->
+  <section class="a-cv">
+    <div class="container">
+      <hr class="a-cv-sep" />
+      <div class="a-cv-inner">
+        <a href="https://drive.google.com/file/d/1Ai4EBzCG0hYL5lRJqmB_vxuZcrv3qwp6/view?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn a-cv-btn">
+          Télécharger le CV complet
+        </a>
+        <div class="a-cv-preview" aria-hidden="true">
+          <img src={`${BASE}images/global/franckchabin_CV_2026.webp`} alt="" draggable="false" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CLOSING TAGLINE ===== -->
+  <section class="a-closing">
+    <div class="container">
+      <p class="a-closing-text">
+        Raconter une histoire par la couleur et la forme pour faire sourire les yeux de son public.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== END CAP ===== -->
+  <section class="a-end-cap" aria-hidden="true"></section>
+
 </Base>
 
 <style>
-  .about {
-    padding: calc(var(--nav-height) + var(--space-lg)) 0 var(--space-2xl);
+  /* =============================================
+     HERO
+     ============================================= */
+  .a-hero {
+    padding: 1.2rem 0 0;
   }
 
-  .about-shell {
-    width: min(100%, 900px);
-    margin: 0 auto;
+  .a-hero .container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: center;
+  }
+
+  .a-hero-photo {
+    width: var(--img-ref-size);
+    height: var(--img-ref-size);
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+  }
+
+  .a-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* =============================================
+     INTRO
+     ============================================= */
+  .a-intro {
+    padding: var(--space-xl) 0 var(--space-2xl);
+  }
+
+  .a-intro-inner {
     text-align: center;
   }
 
-  .about-intro {
-    width: min(100%, 720px);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-
-  .about-intro p,
-  .about-heading,
-  .about-signoff {
+  .a-intro-text {
     font-family: var(--font-serif);
     font-size: clamp(1.1rem, 4vw, 1.9rem);
-    font-weight: normal;
     line-height: 1.3;
     hyphens: none;
     -webkit-hyphens: none;
     text-wrap: balance;
+    margin-bottom: var(--space-sm);
   }
 
-  .about-intro p {
-    max-width: 52ch;
-    margin: 0 auto;
+  .u {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
   }
 
-  .about-contact {
-    margin-top: var(--space-2xl);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-sm);
-  }
-
-  .about-heading {
+  .a-signature {
+    margin-top: var(--space-xl);
+    font-family: var(--font-serif);
     font-style: italic;
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    line-height: 1.4;
+    color: var(--color-text-light);
   }
 
-  .about-heading--contact {
-    margin: 0;
+  .a-signature-sep {
+    display: inline-block;
+    margin: 0 0.3em;
+    opacity: 0.3;
   }
 
-  .about-links,
-  .about-tags {
+  .a-intro-links {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
     justify-content: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-lg);
   }
 
-  .about-links {
-    margin-top: var(--space-2xl);
+  /* =============================================
+     CTA
+     ============================================= */
+  .a-cta {
+    position: relative;
+    padding: var(--space-2xl) 0;
+    border-top: 1px solid var(--color-border);
+    overflow: hidden;
+    min-height: 320px;
+    margin-bottom: 5rem;
+    border-bottom: 1px solid var(--color-border);
   }
 
-  .about-columns {
-    width: min(100%, 820px);
-    margin-top: var(--space-2xl);
-    display: grid;
-    grid-template-columns: repeat(2, minmax(280px, 1fr));
-    gap: var(--space-2xl);
-  }
-
-  .about-column {
+  .a-cta-inner {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-md);
+    text-align: center;
+    gap: var(--space-lg);
+    padding: var(--space-xl) 0;
   }
 
-  .about-tags {
-    max-width: 360px;
-  }
-
-  .about-signoff {
-    width: min(100%, 460px);
-    margin-top: var(--space-2xl);
+  .a-cta-heading {
+    font-family: var(--font-serif);
     font-style: italic;
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
   }
 
+  .a-cta-btn {
+    /* uses global .btn styles */
+  }
+
+  .a-cta-images {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .a-cta-deco {
+    position: absolute;
+    object-fit: cover;
+    border-radius: 3px;
+    opacity: 0.22;
+    transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .a-cta:hover .a-cta-deco {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+
+  @keyframes float-1 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(8px, -12px); }
+  }
+  @keyframes float-2 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-10px, -8px); }
+  }
+  @keyframes float-3 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(6px, 10px); }
+  }
+  @keyframes float-4 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-8px, 6px); }
+  }
+  @keyframes float-5 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(12px, -6px); }
+  }
+
+  .a-cta-deco--1 {
+    width: clamp(130px, 20vw, 240px);
+    height: clamp(160px, 24vw, 300px);
+    top: -30px;
+    left: 3%;
+    animation: float-1 7s ease-in-out infinite;
+  }
+
+  .a-cta-deco--2 {
+    width: clamp(110px, 16vw, 200px);
+    height: clamp(110px, 16vw, 200px);
+    top: 12%;
+    right: -3%;
+    animation: float-2 9s ease-in-out infinite;
+  }
+
+  .a-cta-deco--3 {
+    width: clamp(100px, 14vw, 180px);
+    height: clamp(120px, 17vw, 220px);
+    bottom: -40px;
+    left: 16%;
+    animation: float-3 8s ease-in-out infinite;
+  }
+
+  .a-cta-deco--4 {
+    width: clamp(90px, 13vw, 160px);
+    height: clamp(90px, 13vw, 160px);
+    top: -20px;
+    right: 14%;
+    animation: float-4 6.5s ease-in-out infinite;
+  }
+
+  .a-cta-deco--5 {
+    width: clamp(110px, 15vw, 200px);
+    height: clamp(140px, 19vw, 240px);
+    bottom: -50px;
+    right: 5%;
+    animation: float-5 8.5s ease-in-out infinite;
+  }
+
+  /* =============================================
+     CONTENU — sections resserrées
+     ============================================= */
+  .a-content {
+    position: relative;
+    z-index: 1;
+    background-color: var(--color-bg);
+  }
+
+  .a-label {
+    display: block;
+    font-family: var(--font-nav);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-light);
+    margin-bottom: 0;
+    padding-top: 0;
+  }
+
+  .a-block {
+    padding: var(--space-xl) 0 var(--space-lg);
+  }
+
+  .a-block-grid {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 0 var(--space-lg);
+  }
+
+  /* =============================================
+     LISTE — même ferrage pour tout
+     ============================================= */
+  .a-list {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .a-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .a-list-key {
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--color-text-light);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    width: 3.5em;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.6;
+  }
+
+  .a-list-key-end {
+    display: block;
+  }
+
+  .a-list-value {
+    font-family: var(--font-serif);
+    font-size: clamp(1.3rem, 4vw, 2.8rem);
+    font-weight: normal;
+    font-style: italic;
+    line-height: 1.15;
+  }
+
+  .a-list-sub {
+    font-family: var(--font-serif);
+    font-size: clamp(0.9rem, 2vw, 1.15rem);
+    font-style: italic;
+    color: var(--color-text-light);
+  }
+
+  /* =============================================
+     TAGS — standard
+     ============================================= */
+  .a-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  /* =============================================
+     CV — centré, avec image hover
+     ============================================= */
+  .a-cv {
+    position: relative;
+    z-index: 2;
+    background-color: var(--color-bg);
+  }
+
+  .a-cv-sep {
+    height: 1px;
+    background-color: var(--color-border);
+    border: none;
+    margin: var(--space-xl) 0 0;
+  }
+
+  .a-cv-inner {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12rem 0;
+  }
+
+  .a-cv-btn {
+    position: relative;
+    z-index: 2;
+  }
+
+  .a-cv-preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%) rotate(-8deg);
+    width: clamp(260px, 30vw, 400px);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1;
+    transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .a-cv-btn:hover ~ .a-cv-preview {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-50%) rotate(-3deg);
+  }
+
+  .a-cv-preview img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  /* =============================================
+     CLOSING TAGLINE
+     ============================================= */
+  .a-closing {
+    position: relative;
+    z-index: 1;
+    padding: 0 0 var(--space-2xl);
+    text-align: center;
+    background-color: var(--color-bg);
+  }
+
+  .a-closing-text {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 4vw, 1.9rem);
+    line-height: 1.3;
+    text-wrap: balance;
+    color: var(--color-text-light);
+  }
+
+  /* =============================================
+     END CAP
+     ============================================= */
+  .a-end-cap {
+    --a-radius: clamp(12px, 1.6vw, 18px);
+    position: relative;
+    z-index: 1;
+    min-height: clamp(1.5rem, 3vw, 2.5rem);
+    background-color: var(--color-bg);
+  }
+
+  .a-end-cap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(-1 * var(--a-radius));
+    height: calc(var(--a-radius) * 2);
+    background-color: var(--color-bg);
+    border-bottom-left-radius: var(--a-radius);
+    border-bottom-right-radius: var(--a-radius);
+    pointer-events: none;
+  }
+
+  /* =============================================
+     DESKTOP
+     ============================================= */
   @media (min-width: 768px) {
-    .about-intro p,
-    .about-heading,
-    .about-signoff {
+    .a-intro-text {
+      font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+      line-height: 1.35;
+      margin-bottom: var(--space-md);
+    }
+
+    .a-closing-text {
       font-size: clamp(1.35rem, 2.2vw, 1.9rem);
       line-height: 1.35;
     }
+
+    .a-cta {
+      min-height: 420px;
+    }
+
+    .a-cta-heading {
+      font-size: clamp(3.5rem, 7vw, 5.5rem);
+    }
+
+    /* Toutes les sections : label margin-note à gauche */
+    .a-block-grid {
+      grid-template-columns: 120px 1fr;
+      gap: 0 var(--space-xl);
+    }
+
+    .a-block-grid .a-label {
+      padding-top: 0;
+      margin-bottom: 0;
+    }
+
+    /* Dates parcours/formation : une ligne sur desktop */
+    .a-list-key {
+      flex-direction: row;
+      gap: 0.3em;
+      width: auto;
+      min-width: 6em;
+    }
+
+    .a-list-key-end::before {
+      content: '';
+    }
   }
 
-  @media (max-width: 767px) {
-    .about {
-      padding: calc(var(--nav-height) + var(--space-md)) 0 var(--space-2xl);
-    }
-
-    .about-shell {
-      width: min(100%, 440px);
-    }
-
-    .about-intro {
-      width: min(100%, 380px);
-    }
-
-    .about-intro p {
-      max-width: 30ch;
-    }
-
-    .about-links {
-      max-width: 320px;
-    }
-
-    .about-columns {
-      width: min(100%, 360px);
-      grid-template-columns: 1fr;
-      gap: var(--space-xl);
-    }
-
-    .about-signoff {
-      width: min(100%, 320px);
+  @media (prefers-reduced-motion: reduce) {
+    .a-cta-deco {
+      animation: none;
     }
   }
 </style>

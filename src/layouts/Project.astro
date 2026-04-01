@@ -92,9 +92,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
               </a>
             </nav>
           </div>
-          <div class="project-footer-separator container" aria-hidden="true">
-            <span></span>
-          </div>
+          <!-- separator now in Footer.astro -->
         </section>
       </>
     )}
@@ -187,7 +185,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
   .project-gallery :global(video) {
     width: 100%;
     height: auto;
-    border-radius: var(--radius-card);
+    border-radius: var(--radius-media);
     display: block;
   }
 
@@ -199,8 +197,13 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
   }
 
   /* --- Projet suivant --- */
-  .project-end-cap {
+  /* Radius partagé entre end-cap et section (frères dans le DOM) */
+  .project-end-cap,
+  .project-next-section {
     --project-end-radius: clamp(12px, 1.6vw, 18px);
+  }
+
+  .project-end-cap {
     position: relative;
     z-index: 1;
     margin-top: var(--space-xl);
@@ -223,6 +226,7 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
 
   .project-next-section {
     --project-next-gap: clamp(1.75rem, 3vw, 2.5rem);
+    /* padding-top : radius (caché sous le blanc) + gap visible */
     padding: calc(var(--project-next-gap) + var(--project-end-radius)) 0 0;
     background-color: var(--color-text);
     color: var(--color-bg);
@@ -287,10 +291,13 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
 
   /* Contenu intérieur — desktop */
   .project-next-inner {
+    --thumb-width: clamp(140px, 22vw, 280px);
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--space-xl);
     padding: clamp(1.75rem, 3vw, 2.75rem) 0;
+    padding-right: calc(var(--thumb-width) + var(--space-xl));
   }
 
   .project-next-text {
@@ -311,19 +318,32 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
     text-wrap: balance;
   }
 
-  /* Thumbnail sans crop — ratio naturel conservé */
+  /* Thumbnail — position absolue, ratio conservé, hauteur = section */
   .project-next-thumb {
-    flex: 0 0 clamp(140px, 22vw, 280px);
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--thumb-width);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
 
   .project-next-thumb img {
-    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
+    object-fit: contain;
     display: block;
     border-radius: var(--radius-card);
   }
 
-  /* Mobile : section plein écran, 3 éléments distribués verticalement */
+  /* =============================================
+     MOBILE : footer projet plein écran
+     Ordre : bouton → image (remplit l'espace) → titre
+     ============================================= */
   @media (max-width: 767px) {
     .project-end-cap {
       min-height: var(--space-lg);
@@ -334,15 +354,12 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
       padding-top: calc(var(--space-lg) + var(--project-end-radius));
     }
 
-    .project-next-frame {
-    }
-
     .project-next-inner {
       flex-direction: column;
       align-items: center;
-      justify-content: space-evenly;
-      min-height: 100dvh;
-      gap: 0;
+      gap: var(--space-xl);
+      padding: var(--space-xl) 0;
+      padding-right: 0;
     }
 
     /* display:contents rend btn et titre des flex items directs */
@@ -350,13 +367,32 @@ const { title, description, tags, sideInfo, nextProject } = Astro.props;
       display: contents;
     }
 
-    .project-next-title {
-      text-align: center;
+    /* Bouton en haut — ordre 1 */
+    .project-next-text .btn--footer {
+      order: 1;
+      flex-shrink: 0;
     }
 
+    /* Image au milieu — ordre 2, taille naturelle, ratio conservé */
     .project-next-thumb {
+      position: static;
+      order: 2;
       flex: 0 0 auto;
-      width: 70%;
+      width: 80%;
+      overflow: visible;
+      border-radius: var(--radius-card);
+    }
+
+    .project-next-thumb img {
+      width: 100%;
+      height: auto;
+    }
+
+    /* Titre en bas — ordre 3 */
+    .project-next-title {
+      order: 3;
+      flex-shrink: 0;
+      text-align: center;
     }
   }
 

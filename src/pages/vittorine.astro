@@ -16,13 +16,16 @@ import Project from '../layouts/Project.astro';
 
   <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_01.webp`} alt="Vittorine — vue du broadsheet" loading="lazy" />
 
-  <!-- Vidéo de présentation -->
+  <!-- Vidéo de présentation (avec controls, pas autoplay) -->
   <video
-    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720371590/%C2%A9franckchabin_Vittorine_02.mp4"
-    autoplay loop muted playsinline preload="none"
-  ></video>
-
-  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_02_poster.webp`} alt="Vittorine — poster typographique" loading="lazy" />
+    preload="auto"
+    controls
+    playsinline
+    poster={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_02_poster.webp`}
+    style="width:100%; display:block;"
+  >
+    <source src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720371590/%C2%A9franckchabin_Vittorine_02.mp4" type="video/mp4" />
+  </video>
 
   <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_03.webp`} alt="Vittorine — détail typographie" loading="lazy" />
 

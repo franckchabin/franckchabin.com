@@ -9,6 +9,7 @@ import { BASE } from '../config';
 */
 
 const currentPath = Astro.url.pathname;
+const isHome = currentPath === `${BASE}`;
 ---
 
 <header class="nav-header">
@@ -17,9 +18,17 @@ const currentPath = Astro.url.pathname;
     <div class="nav-left">
       <a
         href={`${BASE}`}
-        class:list={["btn", { active: currentPath === `${BASE}` }]}
+        class:list={["btn", "nav-home", { active: isHome }]}
+        data-nav="home"
       >
-        Réalisations
+        Home
+      </a>
+      <a
+        href={`${BASE}#projets`}
+        class:list={["btn", "nav-projets"]}
+        data-nav="projets"
+      >
+        Projet
       </a>
       <a
         href="https://www.are.na/l-homme-pizza-franck/channels"
@@ -71,7 +80,8 @@ const currentPath = Astro.url.pathname;
 
       <!-- Liens principaux -->
       <div class="nav-overlay-links">
-        <a href={`${BASE}`} class="btn nav-overlay-btn">Réalisations</a>
+        <a href={`${BASE}`} class="btn nav-overlay-btn" data-nav="home">Home</a>
+        <a href={`${BASE}#projets`} class="btn nav-overlay-btn" data-nav="projets">Projet</a>
         <a
           href="https://www.are.na/l-homme-pizza-franck/channels"
           target="_blank"
@@ -158,8 +168,9 @@ const currentPath = Astro.url.pathname;
 
   .burger-line {
     width: 100%;
-    height: 1.5px;
+    height: 2.5px;
     background-color: var(--color-text);
+    border-radius: 2px;
     transition: background-color var(--transition-fast), transform var(--transition-medium);
   }
 
@@ -198,6 +209,7 @@ const currentPath = Astro.url.pathname;
     height: var(--img-ref-size);
     overflow: hidden;
     flex-shrink: 0;
+    border-radius: var(--radius-media);
   }
 
   .nav-overlay-photo {
@@ -303,6 +315,48 @@ const currentPath = Astro.url.pathname;
     };
     setNavHeight();
     window.addEventListener('resize', setNavHeight);
+  }
+
+  // Active state dynamique Home / Projet (uniquement sur la home)
+  const projetsSection = document.getElementById('projets');
+  const homeLinks = document.querySelectorAll('[data-nav="home"]');
+  const projetsLinks = document.querySelectorAll('[data-nav="projets"]');
+
+  if (projetsSection && homeLinks.length && projetsLinks.length) {
+    const updateActiveNav = () => {
+      const sectionTop = projetsSection.getBoundingClientRect().top;
+      const threshold = window.innerHeight * 0.4;
+      const inProjets = sectionTop <= threshold;
+
+      homeLinks.forEach(l => l.classList.toggle('active', !inProjets));
+      projetsLinks.forEach(l => l.classList.toggle('active', inProjets));
+    };
+
+    // Si on arrive avec #projets dans l'URL, scroll vers la section
+    if (window.location.hash === '#projets') {
+      projetsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    updateActiveNav();
+    window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+    // Smooth scroll pour le lien #projets (si déjà sur la home)
+    projetsLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        projetsSection.scrollIntoView({ behavior: 'smooth' });
+        history.replaceState(null, '', '#projets');
+      });
+    });
+
+    // Smooth scroll pour Home (retour en haut)
+    homeLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        history.replaceState(null, '', window.location.pathname);
+      });
+    });
   }
 
   // Menu burger mobile

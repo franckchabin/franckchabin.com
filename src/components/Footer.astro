@@ -19,6 +19,9 @@ const year = new Date().getFullYear();
       <a href="mailto:franck.chabin@icloud.com">franck.chabin@icloud.com</a>
     </div>
   </div>
+  <div class="site-footer-legal container">
+    <span>&copy;franckchabin{year} Tous droits réservés</span>
+  </div>
 </footer>
 
 <style>
@@ -39,8 +42,6 @@ const year = new Date().getFullYear();
   }
 
   .site-footer-inner {
-    max-width: var(--max-width);
-    margin: 0 auto;
   }
 
   .site-footer-block {
@@ -86,6 +87,17 @@ const year = new Date().getFullYear();
     font-size: clamp(0.7rem, 2.8vw, 0.85rem);
   }
 
+  .site-footer-legal {
+    font-family: var(--font-nav);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-bg);
+    opacity: 0.2;
+    font-size: clamp(0.7rem, 2.8vw, 0.85rem);
+    text-align: center;
+    padding: var(--space-lg) var(--gutter) var(--space-lg);
+  }
+
   /* =============================================
      DESKTOP — 3 colonnes classiques
      ============================================= */
@@ -117,6 +129,11 @@ const year = new Date().getFullYear();
     .site-footer-block--contact {
       align-items: flex-end;
       text-align: right;
+    }
+
+    .site-footer-legal {
+      text-align: left;
+      font-size: clamp(0.75rem, 1.25vw, 1.15rem);
     }
   }
 </style>

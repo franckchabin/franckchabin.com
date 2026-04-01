@@ -28,7 +28,7 @@ const isHome = currentPath === `${BASE}`;
         class:list={["btn", "nav-projets"]}
         data-nav="projets"
       >
-        Projet
+        Projets
       </a>
       <a
         href="https://www.are.na/l-homme-pizza-franck/channels"
@@ -81,7 +81,7 @@ const isHome = currentPath === `${BASE}`;
       <!-- Liens principaux -->
       <div class="nav-overlay-links">
         <a href={`${BASE}`} class="btn nav-overlay-btn" data-nav="home">Home</a>
-        <a href={`${BASE}#projets`} class="btn nav-overlay-btn" data-nav="projets">Projet</a>
+        <a href={`${BASE}#projets`} class="btn nav-overlay-btn" data-nav="projets">Projets</a>
         <a
           href="https://www.are.na/l-homme-pizza-franck/channels"
           target="_blank"
@@ -168,7 +168,7 @@ const isHome = currentPath === `${BASE}`;
 
   .burger-line {
     width: 100%;
-    height: 2.5px;
+    height: 3px;
     background-color: var(--color-text);
     border-radius: 2px;
     transition: background-color var(--transition-fast), transform var(--transition-medium);
@@ -267,11 +267,11 @@ const isHome = currentPath === `${BASE}`;
   }
 
   .nav-burger[aria-expanded="true"] .burger-line:first-child {
-    transform: rotate(45deg) translate(2px, 2px);
+    transform: translateY(4px) rotate(45deg);
   }
 
   .nav-burger[aria-expanded="true"] .burger-line:last-child {
-    transform: rotate(-45deg) translate(2px, -2px);
+    transform: translateY(-4px) rotate(-45deg);
   }
 
   /* --- Responsive : tablette — boutons empilés --- */

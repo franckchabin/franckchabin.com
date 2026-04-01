@@ -70,12 +70,22 @@ const {
   </main>
   <Footer />
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const videos = Array.from(document.querySelectorAll('video[data-src]')) as HTMLVideoElement[];
+    function initMedia() {
+      // Cards homepage : détecte si autoplay fonctionne, sinon montre le poster
+      document.querySelectorAll('video.project-card-visual').forEach(v => {
+        const video = v as HTMLVideoElement;
+        video.play().then(() => {
+          video.classList.add('is-playing');
+        }).catch(() => {
+          // Autoplay bloqué (Low Power Mode, etc.) → le poster reste visible
+        });
+      });
 
-      if (videos.length) {
-        // Génère un poster Cloudinary pour les vidéos qui n'en ont pas
-        videos.forEach(v => {
+      // Lazy-load des vidéos avec data-src (pages projet)
+      const lazyVideos = Array.from(document.querySelectorAll('video[data-src]')) as HTMLVideoElement[];
+
+      if (lazyVideos.length) {
+        lazyVideos.forEach(v => {
           if (!v.poster && v.dataset.src) {
             v.poster = v.dataset.src.replace(/\.mp4$/, '.jpg');
           }
@@ -95,7 +105,7 @@ const {
           });
         }, { rootMargin: '400px 0px', threshold: 0 });
 
-        videos.forEach(v => io.observe(v));
+        lazyVideos.forEach(v => io.observe(v));
       }
 
       // Fade-in au scroll pour images et vidéos dans les galeries/grilles
@@ -146,7 +156,14 @@ const {
         window.addEventListener('resize', syncOverscrollTheme, { passive: true });
         syncOverscrollTheme();
       }
-    });
+    }
+
+    // Lancer dès que le DOM est prêt — couvre refresh ET navigation client-side
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMedia);
+    } else {
+      initMedia();
+    }
   </script>
 </body>
 </html>

@@ -93,11 +93,19 @@ const formation = [
   <!-- ===== HERO ===== -->
   <section class="a-hero">
     <div class="container">
-      <div class="a-hero-photo">
+      <div class="a-hero-photo" id="hero-photo">
         <img
           src={`${BASE}images/global/portrait.webp`}
           alt="Franck Chabin"
-          class="a-hero-img"
+          class="a-hero-img a-hero-img--default"
+          width="150"
+          height="150"
+          draggable="false"
+        />
+        <img
+          src={`${BASE}images/global/portrait_pizza.webp`}
+          alt="Franck Chabin avec une pizza"
+          class="a-hero-img a-hero-img--pizza"
           width="150"
           height="150"
           draggable="false"
@@ -111,10 +119,18 @@ const formation = [
     <div class="container">
       <div class="a-intro-inner">
         <p class="a-intro-text">
+          Je m&apos;appelle Franck, <span class="u">créatif indépendant</span> et grand
+          <span class="a-pizza-trigger" data-hover-target="hero-photo">amateur de pizzas</span>.
           Curieux et passionné, j&apos;aime naviguer entre
           les <span class="u">objets imprimés</span> et la <span class="u">culture numérique</span>
           pour voir comment ces deux univers
           peuvent se compléter naturellement.
+        </p>
+        <p class="a-intro-text">
+          Passé par <span class="u">UZIK</span> et <span class="u">Fisheye Magazine</span>,
+          je travaille aujourd&apos;hui chez <span class="u">Picto</span> sur des projets graphiques
+          pour des marques du groupe <span class="u">Shiseido</span>,
+          en parallèle de mes projets.
         </p>
         <p class="a-signature">
           <span class="a-signature-name">Franck Chabin</span>
@@ -273,6 +289,7 @@ const formation = [
   }
 
   .a-hero-photo {
+    position: relative;
     width: var(--img-ref-size);
     height: var(--img-ref-size);
     flex-shrink: 0;
@@ -284,6 +301,31 @@ const formation = [
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  /* Image pizza cachée par défaut, superposée */
+  .a-hero-img--pizza {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+  }
+
+  /* Quand le hero-photo reçoit .is-pizza, on swap */
+  .a-hero-photo.is-pizza .a-hero-img--default {
+    opacity: 0;
+  }
+  .a-hero-photo.is-pizza .a-hero-img--pizza {
+    opacity: 1;
+  }
+
+  /* Trigger "amateur de pizzas" — soulignement + curseur */
+  .a-pizza-trigger {
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    cursor: pointer;
   }
 
   /* =============================================
@@ -687,3 +729,16 @@ const formation = [
     }
   }
 </style>
+
+<script>
+  // Hover "amateur de pizzas" → swap photo portrait ↔ pizza
+  const trigger = document.querySelector('.a-pizza-trigger');
+  const photo = document.getElementById('hero-photo');
+
+  if (trigger && photo) {
+    trigger.addEventListener('mouseenter', () => photo.classList.add('is-pizza'));
+    trigger.addEventListener('mouseleave', () => photo.classList.remove('is-pizza'));
+    // Support tactile
+    trigger.addEventListener('touchstart', () => photo.classList.toggle('is-pizza'), { passive: true });
+  }
+</script>

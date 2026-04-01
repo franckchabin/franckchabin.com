@@ -12,18 +12,22 @@ interface Props {
   tags: string[];
   image?: string;
   video?: string;
+  videoPoster?: string;
 }
 
-const { title, slug, tags, image, video } = Astro.props;
+const { title, slug, tags, image, video, videoPoster: customPoster } = Astro.props;
 
-// Génère un poster Cloudinary à partir de l'URL vidéo (.mp4 → .jpg)
-const videoPoster = video ? video.replace(/\.mp4$/, '.jpg') : undefined;
+// Poster custom ou fallback Cloudinary (.mp4 → .jpg)
+const videoPoster = customPoster || (video ? video.replace(/\.mp4$/, '.jpg') : undefined);
 ---
 
 <a href={`${BASE}${slug}`} class="project-card">
   <div class="project-card-media">
     {video ? (
-      <video data-src={video} poster={videoPoster} autoplay loop muted playsinline preload="none" class="project-card-visual" />
+      <Fragment>
+        <video src={video} autoplay loop muted playsinline preload="none" class="project-card-visual" />
+        <img src={videoPoster} alt={`Projet ${title}`} loading="lazy" class="project-card-visual project-card-poster" />
+      </Fragment>
     ) : image ? (
       <img src={image} alt={`Projet ${title}`} loading="lazy" class="project-card-visual" />
     ) : null}
@@ -53,6 +57,20 @@ const videoPoster = video ? video.replace(/\.mp4$/, '.jpg') : undefined;
     height: auto;
     display: block;
     border-radius: var(--radius-media);
+  }
+
+  /* Poster affiché par défaut, masqué quand la vidéo joue */
+  .project-card-poster {
+    display: block;
+  }
+  video.project-card-visual {
+    display: none;
+  }
+  video.project-card-visual.is-playing {
+    display: block;
+  }
+  video.project-card-visual.is-playing + .project-card-poster {
+    display: none;
   }
 
   /*

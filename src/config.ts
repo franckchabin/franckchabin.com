@@ -6,4 +6,4 @@
   - GitHub Pages  → '/franckchabin.com/'
   - franckchabin.com → '/'
 */
-export const BASE = '/franckchabin.com/';
+export const BASE = '/';

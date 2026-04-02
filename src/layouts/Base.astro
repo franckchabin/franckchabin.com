@@ -27,7 +27,7 @@ const {
   loadGsap = false,
 } = Astro.props;
 
-const siteUrl = 'https://franckchabin.github.io/franckchabin.com';
+const siteUrl = 'https://franckchabin.com';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 const ogImageUrl = ogImage ? new URL(`${BASE}${ogImage}`, siteUrl).href : new URL(`${BASE}images/opengraph/©franckchabin_Home-About_Open-Graph.webp`, siteUrl).href;
 ---

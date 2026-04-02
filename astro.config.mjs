@@ -1,9 +1,11 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   devToolbar: { enabled: false },
-  site: 'https://franckchabin.github.io',
-  base: '/franckchabin.com',
+  site: 'https://franckchabin.com',
+  base: '/',
+  integrations: [sitemap()],
   // Génère des fichiers HTML statiques purs
   output: 'static',
   build: {

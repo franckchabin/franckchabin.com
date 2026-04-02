@@ -16,6 +16,7 @@ interface Props {
   title: string;
   description: string;
   tags: string[];
+  ogImage?: string;
   sideInfo?: string;
   nextProject?: {
     title: string;
@@ -24,10 +25,10 @@ interface Props {
   };
 }
 
-const { title, description, tags, sideInfo, nextProject } = Astro.props;
+const { title, description, tags, ogImage, sideInfo, nextProject } = Astro.props;
 ---
 
-<Base title={`${title} — Franck Chabin`} description={description}>
+<Base title={`${title} — Franck Chabin`} description={description} ogImage={ogImage}>
   <article class="project">
 
     <!-- Titre -->

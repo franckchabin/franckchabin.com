@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://franckchabin.github.io/franckchabin.com/sitemap-index.xml

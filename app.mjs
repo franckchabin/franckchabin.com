@@ -11,8 +11,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PORT = 3333;
 const DEV_PORT = 4321;
-const DEV_URL = `http://localhost:${DEV_PORT}/franckchabin.com/`;
-const LIVE_URL = 'https://franckchabin.github.io/franckchabin.com';
+const DEV_URL = `http://localhost:${DEV_PORT}/`;
+const LIVE_URL = 'https://franckchabin.com';
 
 let devProcess = null;
 

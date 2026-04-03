@@ -3,8 +3,52 @@ import { BASE } from '../config';
 /*
   PAGE PROJET : Vittorine
   Objet éditorial et dessin de caractères — journal/broadsheet.
+  Modules interactifs : Type Tester + Glyph Explorer
 */
 import Project from '../layouts/Project.astro';
+
+/* ---- Tous les 354 glyphes de la fonte, encodés en unicode pour éviter les erreurs de parsing ---- */
+const glyphs: string[] = [
+  // A–Z
+  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+  // a–z
+  ...'abcdefghijklmnopqrstuvwxyz'.split(''),
+  // 0–9
+  ...'0123456789'.split(''),
+  // Ponctuation & symboles
+  ...['!', '"', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '{', '}'],
+  // Symboles monétaires & divers
+  ...['\u00A1', '\u00A2', '\u00A3', '\u00A5', '\u00A7', '\u00A9', '\u00AB', '\u00AE', '\u00B0', '\u00B1', '\u00B2', '\u00B3', '\u00B6', '\u00B7', '\u00B9', '\u00BB', '\u00BF', '\u00D7', '\u00F7'],
+  // Accents majuscules
+  ...['\u00C0', '\u00C1', '\u00C2', '\u00C3', '\u00C4', '\u00C5', '\u00C6', '\u00C7', '\u00C8', '\u00C9', '\u00CA', '\u00CB', '\u00CC', '\u00CD', '\u00CE', '\u00CF', '\u00D0', '\u00D1', '\u00D2', '\u00D3', '\u00D4', '\u00D5', '\u00D6', '\u00D8', '\u00D9', '\u00DA', '\u00DB', '\u00DC', '\u00DD', '\u00DE'],
+  // Accents minuscules
+  ...['\u00DF', '\u00E0', '\u00E1', '\u00E2', '\u00E3', '\u00E4', '\u00E5', '\u00E6', '\u00E7', '\u00E8', '\u00E9', '\u00EA', '\u00EB', '\u00EC', '\u00ED', '\u00EE', '\u00EF', '\u00F0', '\u00F1', '\u00F2', '\u00F3', '\u00F4', '\u00F5', '\u00F6', '\u00F8', '\u00F9', '\u00FA', '\u00FB', '\u00FC', '\u00FD', '\u00FE', '\u00FF'],
+  // Latin étendu A
+  ...['\u0100', '\u0101', '\u0102', '\u0103', '\u0104', '\u0105', '\u0106', '\u0107', '\u010A', '\u010B', '\u010C', '\u010D', '\u010E', '\u010F', '\u0110', '\u0111', '\u0112', '\u0113', '\u0116', '\u0117', '\u0118', '\u0119', '\u011A', '\u011B', '\u011E', '\u011F', '\u0120', '\u0121', '\u0122', '\u0123', '\u0126', '\u0127', '\u0128', '\u0129', '\u012A', '\u012E', '\u012F', '\u0130', '\u0131', '\u0136', '\u0137', '\u0139', '\u013A', '\u013B', '\u013C', '\u013D', '\u013E', '\u013F', '\u0140', '\u0141', '\u0142', '\u0143', '\u0144', '\u0145', '\u0146', '\u0147', '\u0148', '\u014A', '\u014B', '\u014C', '\u014D', '\u0150', '\u0151', '\u0152', '\u0153', '\u0154', '\u0155', '\u0156', '\u0157', '\u0158', '\u0159', '\u015A', '\u015B', '\u015E', '\u015F', '\u0160', '\u0161', '\u0162', '\u0163', '\u0164', '\u0165', '\u0166', '\u0168', '\u0169', '\u016A', '\u016B', '\u016E', '\u016F', '\u0170', '\u0171', '\u0172', '\u0173', '\u0174', '\u0175', '\u0176', '\u0177', '\u0178', '\u0179', '\u017A', '\u017B', '\u017C', '\u017D', '\u017E'],
+  // Latin étendu B + divers
+  ...['\u0191', '\u0192', '\u01CD', '\u01CE', '\u01CF', '\u01D0', '\u01D1', '\u01D2', '\u01D3', '\u01D4', '\u01D5', '\u01D6', '\u01D7', '\u01D8', '\u01D9', '\u01DA', '\u01DB', '\u01DC', '\u0218', '\u0219', '\u021A', '\u021B', '\u0237', '\u0271'],
+  // Latin étendu additionnel
+  ...['\u1E2E', '\u1E80', '\u1E81', '\u1E82', '\u1E83', '\u1E84', '\u1E85', '\u1E9E', '\u1EBC', '\u1EBD', '\u1EF2', '\u1EF3', '\u1EF8', '\u1EF9'],
+  // Ponctuation générale
+  ...['\u2013', '\u2014', '\u2018', '\u2019', '\u201A', '\u201C', '\u201D', '\u201E', '\u2022', '\u2026', '\u2030', '\u2039', '\u203A'],
+  // Exposants & indices
+  ...['\u2070', '\u2074', '\u2075', '\u2076', '\u2077', '\u2078', '\u2079', '\u2080', '\u2081', '\u2082', '\u2083', '\u2084', '\u2085', '\u2086', '\u2087', '\u2088', '\u2089'],
+  // Symboles
+  ...['\u20AC', '\u2122', '\u2190', '\u2191', '\u2192', '\u2193', '\u2212', '\u221E', '\u2248', '\u2264', '\u2265'],
+];
+
+/* ---- Paires de ligatures disponibles (pour le glyph explorer) ---- */
+const ligatures: string[] = [
+  'fb', 'ff', 'fh', 'fi', 'fj', 'fk', 'fl', 'ft', 'fv', 'fw', 'fy',
+  'ffb', 'ffh', 'ffi', 'ffj', 'ffk', 'ffl', 'fft', 'ffw', 'ffy',
+  'gj', 'il', 'it', 'itt', 'iti', 'itti',
+  'jj', 'lg', 'lj', 'lil', 'll', 'lp',
+  'mj', 'mm', 'nn',
+  'ot', 'oti', 'ott', 'otti',
+  'qj', 'st', 'sti', 'stt', 'stti',
+  'tb', 'th', 'ti', 'tj', 'tk', 'tl', 'tt', 'tti',
+  'yj',
+];
 ---
 
 <Project
@@ -17,6 +61,60 @@ import Project from '../layouts/Project.astro';
 
   <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_01.webp`} alt="Vittorine — vue du broadsheet" loading="lazy" />
 
+  <!-- =============================================
+       TYPE TESTER
+       ============================================= -->
+  <div class="type-tester" id="typeTester">
+    <!-- Barre de contrôles (au-dessus) -->
+    <div class="type-tester-toolbar">
+      <div class="toolbar-group">
+        <label class="toolbar-label">Size</label>
+        <input type="range" class="toolbar-slider" id="sliderSize" min="12" max="500" value="160" />
+        <span class="toolbar-value" id="valSize">160px</span>
+      </div>
+
+      <div class="toolbar-group">
+        <label class="toolbar-label">Leading</label>
+        <input type="range" class="toolbar-slider" id="sliderLeading" min="60" max="250" value="100" />
+        <span class="toolbar-value" id="valLeading">1.0</span>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <div class="toolbar-group toolbar-group--colors">
+        <label class="toolbar-label">Couleur</label>
+        <div class="toolbar-color-wrap">
+          <input type="color" class="toolbar-color" id="colorText" value="#1a1a1a" title="Couleur du texte" />
+        </div>
+        <label class="toolbar-label">Fond</label>
+        <div class="toolbar-color-wrap">
+          <input type="color" class="toolbar-color" id="colorBg" value="#ffffff" title="Couleur du fond" />
+        </div>
+      </div>
+
+      <div class="toolbar-sep"></div>
+
+      <button class="btn toolbar-btn" id="toggleInvert" title="Inverser noir/blanc">N/B</button>
+      <button class="btn toolbar-btn" id="toggleCaps" title="Tout en capitales">Caps</button>
+      <button class="btn toolbar-btn active" id="toggleLiga" title="Ligatures">Liga</button>
+
+      <div class="toolbar-sep"></div>
+
+      <div class="toolbar-group toolbar-group--align">
+        <button class="btn toolbar-btn active" id="alignLeft" title="Ferrer à gauche">&#8676;</button>
+        <button class="btn toolbar-btn" id="alignCenter" title="Centrer">&#8596;</button>
+        <button class="btn toolbar-btn" id="alignRight" title="Ferrer à droite">&#8677;</button>
+      </div>
+    </div>
+
+    <div
+      class="type-tester-canvas"
+      contenteditable="true"
+      spellcheck="false"
+      id="typeCanvas"
+    >La Juventus Football Club, créée à Turin en 1897, représente l'esprit de l'italianité et de jeunesse. Surnommée la "Vieille Dame" ou les "Bianconeri," elle incarne l'union entre aristocraties et ouvriers, symbolisant la fusion des classes sociales.</div>
+  </div>
+
   <!-- Vidéo de présentation (avec controls, pas autoplay) -->
   <video
     preload="auto"
@@ -28,14 +126,519 @@ import Project from '../layouts/Project.astro';
     <source src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720371590/%C2%A9franckchabin_Vittorine_02.mp4" type="video/mp4" />
   </video>
 
-  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_03.webp`} alt="Vittorine — détail typographie" loading="lazy" />
+  <!-- =============================================
+       GLYPH EXPLORER
+       ============================================= -->
+  <div class="glyph-explorer" id="glyphExplorer">
+    <div class="glyph-grid" id="glyphGrid">
+      {glyphs.map((g) => (
+        <button class="glyph-cell" data-glyph={g}>{g}</button>
+      ))}
+      {ligatures.map((lig) => (
+        <button class="glyph-cell glyph-cell--liga" data-glyph={lig} data-liga="true">{lig}</button>
+      ))}
+    </div>
+    <div class="glyph-preview" id="glyphPreview">
+      <span class="glyph-preview-char" id="glyphPreviewChar">A</span>
+      <span class="glyph-preview-label" id="glyphPreviewLabel">U+0041 — Latin Capital Letter A</span>
+    </div>
+  </div>
+
+  <!-- Mobile fallback : grille seule, pas de split -->
+  <div class="glyph-mobile" id="glyphMobile">
+    <div class="glyph-grid">
+      {glyphs.map((g) => (
+        <span class="glyph-cell">{g}</span>
+      ))}
+      {ligatures.map((lig) => (
+        <span class="glyph-cell glyph-cell--liga">{lig}</span>
+      ))}
+    </div>
+  </div>
+
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_03.webp`} alt="Vittorine — détail typographie" loading="lazy" class="img-outlined" />
 
   <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_04.webp`} alt="Vittorine — mise en page 1" loading="lazy" />
-  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_05.webp`} alt="Vittorine — mise en page 2" loading="lazy" />
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_05.webp`} alt="Vittorine — mise en page 2" loading="lazy" class="img-outlined" />
 
   <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_06.gif`} alt="Vittorine — animation" loading="lazy" />
 
-  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_07.webp`} alt="Vittorine — détail 1" loading="lazy" />
+  <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_07.webp`} alt="Vittorine — détail 1" loading="lazy" class="img-outlined" />
   <img src={`${BASE}images/projects/vittorine/©franckchabin_Vittorine_08.webp`} alt="Vittorine — détail 2" loading="lazy" />
 
 </Project>
+
+<style>
+  /* =============================================
+     FONT FACE
+     ============================================= */
+  :global(.img-outlined) {
+    border: 1px solid var(--color-text) !important;
+  }
+
+  @font-face {
+    font-family: 'Vittorine';
+    src: url('/fonts/Vittorine_WIP.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /* =============================================
+     TYPE TESTER
+     ============================================= */
+  .type-tester {
+    aspect-ratio: 3 / 2;
+    background-color: #ffffff;
+    border-radius: var(--radius-media);
+    border: 1px solid var(--color-text);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .type-tester-canvas {
+    flex: 1;
+    font-family: 'Vittorine', sans-serif;
+    font-size: 160px;
+    line-height: 1;
+    color: #1a1a1a;
+    padding: 1.5rem;
+    outline: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-break: break-word;
+    cursor: text;
+    caret-color: currentColor;
+    font-feature-settings: 'liga' 1, 'calt' 1, 'rlig' 1;
+    text-align: left;
+  }
+
+  /* Scrollbar discrète */
+  .type-tester-canvas::-webkit-scrollbar {
+    width: 4px;
+  }
+  .type-tester-canvas::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .type-tester-canvas::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+  }
+
+  .type-tester-canvas:empty::before {
+    content: 'Tapez ici\2026';
+    color: rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+  }
+
+  /* --- Toolbar (au-dessus du canvas) --- */
+  .type-tester-toolbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+    padding: 0.85rem 1.5rem;
+    border-bottom: 1px solid var(--color-text);
+    background: var(--color-bg);
+    flex-wrap: wrap;
+  }
+
+  .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .toolbar-group--colors {
+    gap: 0.4rem;
+  }
+
+  .toolbar-label {
+    font-family: var(--font-nav);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-light);
+    user-select: none;
+  }
+
+  .toolbar-value {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: var(--color-text-light);
+    min-width: 3em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+
+  .toolbar-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--color-border);
+    flex-shrink: 0;
+  }
+
+  /* Slider */
+  .toolbar-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 110px;
+    height: 2px;
+    background: var(--color-border);
+    border-radius: 1px;
+    outline: none;
+    cursor: pointer;
+  }
+  .toolbar-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-text);
+    cursor: pointer;
+    border: none;
+  }
+  .toolbar-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-text);
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Color picker */
+  .toolbar-color-wrap {
+    position: relative;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid var(--color-border);
+    flex-shrink: 0;
+  }
+  .toolbar-color {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    cursor: pointer;
+    position: absolute;
+    top: -5px;
+    left: -5px;
+  }
+  .toolbar-color::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  .toolbar-color::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+  }
+  .toolbar-color::-moz-color-swatch {
+    border: none;
+    border-radius: 50%;
+  }
+
+  /* Toggle buttons — inherits .btn from global */
+  .toolbar-btn {
+    font-size: 1rem !important;
+    padding: 0.17em 0.8em 0.1em !important;
+  }
+
+  /* =============================================
+     GLYPH EXPLORER — desktop only
+     ============================================= */
+  .glyph-explorer {
+    display: none;
+    border-radius: var(--radius-media);
+    border: 1px solid var(--color-text);
+    overflow: hidden;
+    background: var(--color-bg);
+    aspect-ratio: 3 / 2;
+  }
+
+  .glyph-mobile {
+    display: block;
+    border-radius: var(--radius-media);
+    border: 1px solid var(--color-text);
+    overflow: hidden;
+    background: var(--color-bg);
+    padding: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .glyph-explorer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .glyph-mobile {
+      display: none;
+    }
+  }
+
+  .glyph-grid {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 0;
+    padding: 0;
+    border-right: 1px solid var(--color-text);
+    overflow-y: auto;
+  }
+
+  /* Scrollbar discrète grille */
+  .glyph-grid::-webkit-scrollbar {
+    width: 4px;
+  }
+  .glyph-grid::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .glyph-grid::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+  }
+
+  .glyph-mobile .glyph-grid {
+    border-right: none;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 2px;
+    overflow: visible;
+  }
+
+  .glyph-cell {
+    font-family: 'Vittorine', sans-serif;
+    font-size: 2.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+    border-bottom: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    padding: 0;
+  }
+
+  .glyph-cell--liga {
+    font-size: 1.5rem;
+    font-feature-settings: 'liga' 1, 'rlig' 1;
+  }
+
+  .glyph-cell:hover,
+  .glyph-cell.is-active {
+    background-color: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  .glyph-mobile .glyph-cell {
+    cursor: default;
+    border: none;
+    border-radius: var(--radius-tag);
+    font-size: 1.8rem;
+  }
+  .glyph-mobile .glyph-cell--liga {
+    font-size: 1.2rem;
+  }
+  .glyph-mobile .glyph-cell:hover {
+    background: transparent;
+    color: var(--color-text);
+  }
+
+  /* Preview panel */
+  .glyph-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+  }
+
+  .glyph-preview-char {
+    font-family: 'Vittorine', sans-serif;
+    font-size: clamp(14rem, 22vw, 26rem);
+    line-height: 1;
+    color: var(--color-text);
+    user-select: none;
+    transition: none;
+    font-feature-settings: 'liga' 1, 'rlig' 1;
+  }
+
+  .glyph-preview-label {
+    position: absolute;
+    bottom: 1.25rem;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+    letter-spacing: 0.04em;
+  }
+
+  /* =============================================
+     RESPONSIVE
+     ============================================= */
+  @media (max-width: 767px) {
+    .type-tester {
+      aspect-ratio: auto;
+      min-height: 45vh;
+    }
+    .type-tester-canvas {
+      font-size: 64px;
+    }
+    .type-tester-toolbar {
+      padding: 0.5rem 0.75rem;
+      gap: 0.5rem;
+    }
+    .toolbar-slider {
+      width: 70px;
+    }
+    .toolbar-sep {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // --- Type Tester Controls ---
+  const canvas = document.getElementById('typeCanvas') as HTMLElement;
+  const sliderSize = document.getElementById('sliderSize') as HTMLInputElement;
+  const sliderLeading = document.getElementById('sliderLeading') as HTMLInputElement;
+  const valSize = document.getElementById('valSize')!;
+  const valLeading = document.getElementById('valLeading')!;
+  const colorText = document.getElementById('colorText') as HTMLInputElement;
+  const colorBg = document.getElementById('colorBg') as HTMLInputElement;
+  const toggleInvert = document.getElementById('toggleInvert') as HTMLButtonElement;
+  const toggleCaps = document.getElementById('toggleCaps') as HTMLButtonElement;
+  const toggleLiga = document.getElementById('toggleLiga') as HTMLButtonElement;
+  const tester = document.getElementById('typeTester') as HTMLElement;
+
+  let isCaps = false;
+  let isLiga = true;
+
+  // Font size
+  sliderSize.addEventListener('input', () => {
+    const v = sliderSize.value;
+    canvas.style.fontSize = `${v}px`;
+    valSize.textContent = `${v}px`;
+  });
+
+  // Line height
+  sliderLeading.addEventListener('input', () => {
+    const v = parseInt(sliderLeading.value) / 100;
+    canvas.style.lineHeight = String(v);
+    valLeading.textContent = v.toFixed(1);
+  });
+
+  // Text color
+  colorText.addEventListener('input', () => {
+    canvas.style.color = colorText.value;
+  });
+
+  // Background color
+  colorBg.addEventListener('input', () => {
+    tester.style.backgroundColor = colorBg.value;
+  });
+
+  // Toggle noir/blanc
+  toggleInvert.addEventListener('click', () => {
+    const isWhiteBg = colorBg.value === '#ffffff' || colorBg.value === '#FFFFFF';
+    if (isWhiteBg) {
+      colorBg.value = '#1a1a1a';
+      colorText.value = '#ffffff';
+    } else {
+      colorBg.value = '#ffffff';
+      colorText.value = '#1a1a1a';
+    }
+    tester.style.backgroundColor = colorBg.value;
+    canvas.style.color = colorText.value;
+  });
+
+  // Toggle caps
+  toggleCaps.addEventListener('click', () => {
+    isCaps = !isCaps;
+    canvas.style.textTransform = isCaps ? 'uppercase' : 'none';
+    toggleCaps.classList.toggle('active', isCaps);
+  });
+
+  // Alignment
+  const alignLeft = document.getElementById('alignLeft') as HTMLButtonElement;
+  const alignCenter = document.getElementById('alignCenter') as HTMLButtonElement;
+  const alignRight = document.getElementById('alignRight') as HTMLButtonElement;
+  const alignBtns = [alignLeft, alignCenter, alignRight];
+
+  function setAlign(align: string, activeBtn: HTMLButtonElement) {
+    canvas.style.textAlign = align;
+    alignBtns.forEach(b => b.classList.remove('active'));
+    activeBtn.classList.add('active');
+  }
+
+  alignLeft.addEventListener('click', () => setAlign('left', alignLeft));
+  alignCenter.addEventListener('click', () => setAlign('center', alignCenter));
+  alignRight.addEventListener('click', () => setAlign('right', alignRight));
+
+  // Toggle ligatures — must also disable 'rlig' (required ligatures)
+  // as the font duplicates liga substitutions under rlig
+  toggleLiga.addEventListener('click', () => {
+    isLiga = !isLiga;
+    const val = isLiga
+      ? "'liga' 1, 'calt' 1, 'rlig' 1"
+      : "'liga' 0, 'calt' 0, 'rlig' 0";
+    canvas.style.setProperty('font-feature-settings', val, 'important');
+    toggleLiga.classList.toggle('active', isLiga);
+  });
+
+  // --- Glyph Explorer ---
+  const glyphGrid = document.getElementById('glyphGrid');
+  const previewChar = document.getElementById('glyphPreviewChar');
+  const previewLabel = document.getElementById('glyphPreviewLabel');
+
+  if (glyphGrid && previewChar && previewLabel) {
+    let activeCell: HTMLElement | null = glyphGrid.querySelector('.glyph-cell');
+    if (activeCell) activeCell.classList.add('is-active');
+
+    function getLabel(char: string, isLigature: boolean): string {
+      if (isLigature) return `Ligature \u2014 ${char}`;
+      const code = char.codePointAt(0)!;
+      const hex = `U+${code.toString(16).toUpperCase().padStart(4, '0')}`;
+      if (code >= 65 && code <= 90) return `${hex} \u2014 ${char}`;
+      if (code >= 97 && code <= 122) return `${hex} \u2014 ${char}`;
+      if (code >= 48 && code <= 57) return `${hex} \u2014 ${char}`;
+      return `${hex} \u2014 ${char}`;
+    }
+
+    function updatePreview(char: string, cell: HTMLElement) {
+      const isLigature = cell.dataset.liga === 'true';
+      previewChar!.textContent = char;
+      previewLabel!.textContent = getLabel(char, isLigature);
+      if (isLigature) {
+        previewChar!.style.fontSize = '';
+      } else {
+        previewChar!.style.fontSize = '';
+      }
+      if (activeCell) activeCell.classList.remove('is-active');
+      cell.classList.add('is-active');
+      activeCell = cell;
+    }
+
+    glyphGrid.addEventListener('mouseover', (e) => {
+      const cell = (e.target as HTMLElement).closest('.glyph-cell') as HTMLElement;
+      if (!cell) return;
+      const glyph = cell.dataset.glyph || cell.textContent || '';
+      updatePreview(glyph, cell);
+    });
+
+    glyphGrid.addEventListener('click', (e) => {
+      const cell = (e.target as HTMLElement).closest('.glyph-cell') as HTMLElement;
+      if (!cell) return;
+      const glyph = cell.dataset.glyph || cell.textContent || '';
+      updatePreview(glyph, cell);
+    });
+  }
+</script>

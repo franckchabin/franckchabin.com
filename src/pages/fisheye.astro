@@ -29,16 +29,12 @@ import Project from '../layouts/Project.astro';
 
   <img src={`${BASE}images/projects/fisheye/©franckchabin_Fisheye_02.webp`} alt="Fisheye — déclinaison visuelle" loading="lazy" />
 
-  <!-- Vidéo motion (avec controls, pas autoplay) -->
+  <!-- Vidéo motion (autoplay lazy) -->
   <video
-    preload="auto"
-    controls
-    playsinline
+    data-src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720753437/%C2%A9franckchabin_Fisheye_03.mp4"
+    autoplay loop muted playsinline preload="none"
     poster="https://res.cloudinary.com/db5vnijzw/video/upload/v1720753437/%C2%A9franckchabin_Fisheye_03.jpg"
-    style="width:100%; display:block;"
-  >
-    <source src="https://res.cloudinary.com/db5vnijzw/video/upload/v1720753437/%C2%A9franckchabin_Fisheye_03.mp4" type="video/mp4" />
-  </video>
+  ></video>
 
   <img src={`${BASE}images/projects/fisheye/©franckchabin_Fisheye_04.gif`} alt="Fisheye — animation" loading="lazy" />
 

@@ -34,8 +34,8 @@
   /* Taille de référence des images — responsive, calquée sur la hero photo */
   --img-ref-size: 90px;
 
-  /* Layout projet (largeur galerie = 95vh × ratio 3:2) */
-  --gallery-max: calc(95vh * 1.5);
+  /* Layout projet (largeur galerie = 85vh × ratio 3:2) */
+  --gallery-max: calc(85vh * 1.5);
 
   /* Bordures & arrondis */
   --border-width:  1.5px;

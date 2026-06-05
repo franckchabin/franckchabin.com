@@ -2,7 +2,9 @@
 # ─── Launcher franckchabin.com Dashboard ───
 # Détecte le dossier projet relativement à l'emplacement de l'app
 
-APP_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+# Résoudre le vrai chemin du script (gère App Translocation / symlinks)
+SCRIPT_REAL="$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$0" 2>/dev/null || echo "$0")"
+APP_DIR="$(cd "$(dirname "$SCRIPT_REAL")/../../.." && pwd)"
 PROJECT="$APP_DIR"
 PORT=3333
 
@@ -58,7 +60,12 @@ export PATH="$NODE_DIR:$PATH"
 if [ ! -f "$PROJECT/package.json" ]; then
   alert "Fichier package.json introuvable.
 
-L'app Dashboard.app doit rester dans le dossier du projet franckchabin.com."
+Chemin résolu : $PROJECT
+
+L'app Dashboard.app doit rester dans le dossier du projet franckchabin.com.
+
+Si ce chemin est aléatoire (/var/folders/…), ouvre un Terminal et lance :
+  xattr -cr ~/Developer/franckchabin.com/Dashboard.app"
   exit 1
 fi
 

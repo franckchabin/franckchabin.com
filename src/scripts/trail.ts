@@ -3,6 +3,14 @@
    Modes DESKTOP : imgTrail
    Modes MOBILE  : Spirale · Rond · Trajet · MouseSim · Random
    ================================================================ */
+import { PixelTrail, type TrailMesh } from './pixelTrail';
+
+/* ── Map timeline par mesh ────────────────────────────────────────
+   gsap.killTweensOf() ne tue pas les tl.call() (callbacks).
+   On stocke le timeline courant pour pouvoir tl.kill() en entier.
+   ─────────────────────────────────────────────────────────────── */
+const meshTl = new WeakMap<TrailMesh, any>();
+
 const hero = document.getElementById('hero');
 const trailImgs = Array.from(document.querySelectorAll('.hero-trail-img'));
 if (!hero || trailImgs.length === 0) throw new Error('Hero elements not found');
@@ -22,23 +30,27 @@ const CFG: Record<string, any> = {
   centerOnPhoto: true,
 
   // imgTrail (desktop)
-  d_threshold: 30, d_lerp: 0.36, d_slideDuration: 0.1,
-  d_fadeDelay: 0.3, d_fadeDuration: 0.9, d_fadeOpacity: 0.2, d_blur: 30,
+  d_threshold: 65, d_lerp: 0.36, d_slideDuration: 0.25,
+  d_fadeDelay: 0.3, d_fadeDuration: 0.9, d_fadeOpacity: 1,
+  d_blur: 39, d_pixel: 65, d_scaleFinal: 0.8,
 
   // Spirale
   t_interval: 172, t_radiusMin: 15, t_radiusMax: 96,
   t_speedStart: 0.25, t_speedEnd: 0.3, t_densityMax: 1,
-  t_fadeDelay: 0.6, t_fadeDuration: 1.2, t_fadeOpacity: 0, t_blur: 0,
+  t_fadeDelay: 0.6, t_fadeDuration: 1.2, t_fadeOpacity: 0,
+  t_blur: 0, t_pixel: 0, t_scaleFinal: 0,
   t_turns: 3, t_showPath: 0,
 
   // Rond
   r_interval: 100, r_radius: 30, r_speed: 0.06, r_count: 1,
-  r_fadeDelay: 0.4, r_fadeDuration: 1.0, r_fadeOpacity: 0, r_blur: 0,
+  r_fadeDelay: 0.4, r_fadeDuration: 1.0, r_fadeOpacity: 0,
+  r_blur: 0, r_pixel: 0, r_scaleFinal: 0,
 
   // Trajet profil → texte
   p_paths: 3, p_interval: 180, p_stepSize: 0.018,
   p_curve: 60, p_spread: 55,
-  p_fadeDelay: 0.4, p_fadeDuration: 1.1, p_fadeOpacity: 0, p_blur: 0,
+  p_fadeDelay: 0.4, p_fadeDuration: 1.1, p_fadeOpacity: 0,
+  p_blur: 0, p_pixel: 0, p_scaleFinal: 0,
 
   // Mouse simulation — mouvement
   m_speed: 0.017,
@@ -49,7 +61,8 @@ const CFG: Record<string, any> = {
   m_threshold: 30, m_interval: 60,
   m_slideDuration: 0.1,
   // Mouse simulation — disparition
-  m_fadeDelay: 0.3, m_fadeDuration: 0.9, m_fadeOpacity: 0.2, m_blur: 30,
+  m_fadeDelay: 0.3, m_fadeDuration: 0.9, m_fadeOpacity: 0.2,
+  m_blur: 0, m_pixel: 100, m_scaleFinal: 0,
   // Mouse simulation — affichage
   m_showCursor: 1, m_showAmpl: 0,
 
@@ -59,8 +72,113 @@ const CFG: Record<string, any> = {
   x_imgSizeMin: 60, x_imgSizeMax: 60,
   x_scaleVar: 0,
   x_opacity: 1.0, x_fadeDelay: 0.5, x_fadeDuration: 1.4, x_fadeOpacity: 0,
-  x_blur: 0, x_randomness: 60, x_gravity: 0,
+  x_blur: 0, x_pixel: 0, x_scaleFinal: 0, x_randomness: 60, x_gravity: 0,
 };
+
+/* ── PIXEL TRAIL (Three.js) ── */
+const trailSrcs = trailImgs.map(img => (img as HTMLImageElement).src);
+// Cacher les <img> DOM — plus utilisées, Three.js les remplace
+trailImgs.forEach(img => { (img as HTMLElement).style.display = 'none'; });
+const trailContainer = hero.querySelector('.hero-trail') as HTMLElement;
+const pixelTrail = new PixelTrail(hero, trailContainer, trailSrcs, 64);
+
+/* ── Helper : tue les tweens GSAP sur un mesh ── */
+function killMesh(g: any, e: TrailMesh) {
+  /* Tuer le timeline entier (inclut les tl.call() callbacks) */
+  const tl = meshTl.get(e);
+  if (tl) { tl.kill(); meshTl.delete(e); }
+  /* Sécurité supplémentaire sur les propriétés orphelines */
+  g.killTweensOf(e.mesh.position);
+  g.killTweensOf(e.mesh.scale);
+  g.killTweensOf(e.mat.uniforms.u_opacity);
+  g.killTweensOf(e.mat.uniforms.u_pixelFactor);
+  g.killTweensOf(e.mat.uniforms.u_dissolve);
+  g.killTweensOf(e.mat.uniforms.u_blur);
+}
+
+/* ── Helper : anime un mesh Three.js ─────────────────────────────
+   blurPx     : flou gaussien en pixels (0 = off)
+   pixelAmt   : intensité pixelisation 0-100
+                → u_pixelFactor animé de 0 à pixelAmt/100
+   scaleFinal : échelle finale 0-1  (0 = réduit à 0, 1 = reste pleine taille)
+   ────────────────────────────────────────────────────────────── */
+function spawnMesh(
+  g: any, e: TrailMesh | null,
+  domX: number, domY: number,
+  size: number, zOrder: number,
+  fadeDelay: number, fadeDuration: number, fadeOpacity: number,
+  blurPx: number,
+  pixelAmt: number,
+  scaleFinal: number,
+  slideX?: number, slideY?: number, slideDuration?: number,
+  initOpacity = 1,
+) {
+  if (!e) return;
+
+  killMesh(g, e);
+
+  const p = pixelTrail.domToThree(domX, domY);
+  e.mesh.position.set(p.x, p.y, 0);
+  e.mesh.scale.set(size, size, 1);
+  e.mesh.renderOrder = zOrder;
+  e.mat.uniforms.u_opacity.value     = initOpacity;
+  e.mat.uniforms.u_pixelFactor.value = 0;
+  e.mat.uniforms.u_dissolve.value    = 0;
+  e.mat.uniforms.u_blur.value        = 0;
+  e.mesh.visible = true;
+
+  const tl = g.timeline();
+  meshTl.set(e, tl); // enregistrer pour pouvoir le tuer en entier
+
+  // Glissement optionnel (imgTrail + mouseSim)
+  if (slideX !== undefined && slideY !== undefined && slideDuration) {
+    const sp = pixelTrail.domToThree(slideX, slideY);
+    tl.to(e.mesh.position, { x: sp.x, y: sp.y, duration: slideDuration, ease: 'expo.out' }, 0);
+  }
+
+  // Scale → taille finale (0 = disparaît, 1 = reste pleine taille)
+  const targetScale = size * Math.max(0, Math.min(1, scaleFinal));
+  tl.to(e.mesh.scale,
+    { x: targetScale, y: targetScale, duration: fadeDuration, ease: 'power3.out' },
+    fadeDelay,
+  );
+  // Opacité → fadeOpacity
+  tl.to(e.mat.uniforms.u_opacity,
+    { value: fadeOpacity, duration: fadeDuration, ease: 'power3.out' },
+    fadeDelay,
+  );
+  // Flou gaussien GLSL (sigma UV = blurPx / size, cappé à 0.08 pour éviter l'artefact de bord)
+  if (blurPx > 0) {
+    tl.to(e.mat.uniforms.u_blur,
+      { value: Math.min(blurPx / size, 0.08), duration: fadeDuration, ease: 'power3.out' },
+      fadeDelay,
+    );
+  }
+  // Pixelisation 0 → pixelAmt/100 ET dissolution simultanée extérieur→centre
+  if (pixelAmt > 0) {
+    const target = Math.min(pixelAmt / 100, 1);
+    tl.to(e.mat.uniforms.u_pixelFactor,
+      { value: target, duration: fadeDuration, ease: 'power3.out' },
+      fadeDelay,
+    );
+    // La dissolution suit le même rythme → blocs qui disparaissent depuis les bords
+    tl.to(e.mat.uniforms.u_dissolve,
+      { value: 1, duration: fadeDuration, ease: 'power2.in' },
+      fadeDelay,
+    );
+  }
+
+  // ── Libérer le mesh à la fin ───────────────────────────────────
+  // Guard : ne s'exécute que si ce timeline est toujours le courant
+  // (évite que les anciens callbacks tuent un mesh recyclé).
+  tl.call(() => {
+    if (meshTl.get(e) === tl) {
+      e.mat.uniforms.u_opacity.value = 0;
+      e.mesh.visible = false;
+      meshTl.delete(e);
+    }
+  });
+}
 
 /* ── INDICATEUR TAILLE IMAGE ── */
 let updateImgRefIndicator: () => void = () => {};
@@ -102,7 +220,8 @@ function stopAll() {
   if (simFrameId)  { cancelAnimationFrame(simFrameId); simFrameId  = null; }
   deskRunning = false;
   const g = (window as any).gsap;
-  if (g) trailImgs.forEach(img => { g.killTweensOf(img); g.set(img, { opacity: 0, scale: 0 }); });
+  if (g) pixelTrail.entries.forEach(e => { killMesh(g, e); });
+  pixelTrail.resetAll();
   if (cursorEl) { cursorEl.remove(); cursorEl = null; }
   if (amplGuides) { amplGuides.remove(); amplGuides = null; }
 }
@@ -159,16 +278,21 @@ function startDesktop(gsap: any) {
   let idx = 0, z = 1;
   const lerp = (a:number,b:number,n:number) => (1-n)*a+n*b;
   const dist  = (a:{x:number,y:number},b:{x:number,y:number}) => Math.hypot(b.x-a.x,b.y-a.y);
+  let overContent = false; // souris au-dessus de la photo / du texte
   if (!deskBound) {
+    /* Activation instantanée : on démarre dès le premier mousemove, sans
+       attendre un mouseenter. Au refresh la souris est déjà dans le hero,
+       donc mouseenter ne se déclenche jamais → plus de délai apparent. */
     hero.addEventListener('mousemove', e => {
-      const r = hero.getBoundingClientRect(); mouse.x = e.clientX-r.left; mouse.y = e.clientY-r.top;
+      const r = hero.getBoundingClientRect();
+      mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+      if (!deskRunning && !overContent) { deskRunning = true; sm = {...mouse}; last = {...mouse}; loop(); }
     });
-    hero.addEventListener('mouseenter', () => { deskRunning=true; sm={...mouse}; last={...mouse}; loop(); });
-    hero.addEventListener('mouseleave', () => { deskRunning=false; });
+    hero.addEventListener('mouseleave', () => { deskRunning = false; });
     const hc = hero.querySelector('.hero-content');
     if (hc) {
-      hc.addEventListener('mouseenter', () => { deskRunning=false; });
-      hc.addEventListener('mouseleave', () => { deskRunning=true; last={...mouse}; loop(); });
+      hc.addEventListener('mouseenter', () => { overContent = true;  deskRunning = false; });
+      hc.addEventListener('mouseleave', () => { overContent = false; deskRunning = true; last = {...mouse}; loop(); });
     }
     deskBound = true;
   }
@@ -179,14 +303,15 @@ function startDesktop(gsap: any) {
     requestAnimationFrame(loop);
   }
   function show() {
-    const img = trailImgs[idx] as HTMLImageElement;
-    const w = img.offsetWidth||150, h = img.offsetHeight||150;
-    gsap.killTweensOf(img);
-    const ub = CFG.d_blur > 0;
-    gsap.timeline()
-      .set(img, { opacity:1, scale:1, x:sm.x-w/2, y:sm.y-h/2, zIndex:++z, ...(ub?{filter:'blur(0px)'}:{filter:'none'}) })
-      .to(img, { duration:CFG.d_slideDuration, ease:'expo.out', x:mouse.x-w/2, y:mouse.y-h/2 }, 0)
-      .to(img, { duration:CFG.d_fadeDuration, ease:'power3.out', scale:0, opacity:CFG.d_fadeOpacity, ...(ub?{filter:`blur(${CFG.d_blur}px)`}:{}) }, CFG.d_fadeDelay);
+    const entry = pixelTrail.acquire(idx, imgRef);
+    spawnMesh(
+      gsap, entry,
+      sm.x, sm.y,
+      imgRef, ++z,
+      CFG.d_fadeDelay, CFG.d_fadeDuration, CFG.d_fadeOpacity,
+      CFG.d_blur, CFG.d_pixel, CFG.d_scaleFinal,
+      mouse.x, mouse.y, CFG.d_slideDuration,
+    );
     idx = (idx+1) % trailImgs.length;
   }
 }
@@ -201,13 +326,14 @@ function startSpirale(gsap: any) {
     const r = minR + (maxR - minR) * p;
     const raw = { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r };
     const { x, y } = wrapPos(raw.x, raw.y);
-    const img = trailImgs[idx] as HTMLImageElement;
-    const s = imgRef;
-    gsap.killTweensOf(img); gsap.set(img, { width:s, height:s });
-    const ub = CFG.t_blur > 0;
-    gsap.timeline()
-      .set(img, { opacity:1, scale:1, x:x-s/2, y:y-s/2, zIndex:++z, rotation:0, ...(ub?{filter:'blur(0px)'}:{filter:'none'}) })
-      .to(img, { duration:CFG.t_fadeDuration, ease:'power3.out', scale:0, opacity:CFG.t_fadeOpacity, ...(ub?{filter:`blur(${CFG.t_blur}px)`}:{}) }, CFG.t_fadeDelay);
+    const entry = pixelTrail.acquire(idx, imgRef);
+    spawnMesh(
+      gsap, entry,
+      x, y,
+      imgRef, ++z,
+      CFG.t_fadeDelay, CFG.t_fadeDuration, CFG.t_fadeOpacity,
+      CFG.t_blur, CFG.t_pixel, CFG.t_scaleFinal,
+    );
     idx = (idx+1) % trailImgs.length;
     const ratio = (maxR - minR) > 0 ? (r - minR) / (maxR - minR) : 0;
     angle += CFG.t_speedStart + (CFG.t_speedEnd - CFG.t_speedStart) * ratio;
@@ -231,13 +357,14 @@ function startRond(gsap: any) {
     for (let i = 0; i < count; i++) {
       const a = angle + (i * Math.PI * 2 / count);
       const { x, y } = wrapPos(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-      const img = trailImgs[idx] as HTMLImageElement;
-      const s = imgRef;
-      gsap.killTweensOf(img); gsap.set(img, { width:s, height:s });
-      const ub = CFG.r_blur > 0;
-      gsap.timeline()
-        .set(img, { opacity:1, scale:1, x:x-s/2, y:y-s/2, zIndex:++z, rotation:0, ...(ub?{filter:'blur(0px)'}:{filter:'none'}) })
-        .to(img, { duration:CFG.r_fadeDuration, ease:'power3.out', scale:0, opacity:CFG.r_fadeOpacity, ...(ub?{filter:`blur(${CFG.r_blur}px)`}:{}) }, CFG.r_fadeDelay);
+      const entry = pixelTrail.acquire(idx, imgRef);
+      spawnMesh(
+        gsap, entry,
+        x, y,
+        imgRef, ++z,
+        CFG.r_fadeDelay, CFG.r_fadeDuration, CFG.r_fadeOpacity,
+        CFG.r_blur, CFG.r_pixel, CFG.r_scaleFinal,
+      );
       idx = (idx+1) % trailImgs.length;
     }
     angle += CFG.r_speed;
@@ -265,13 +392,14 @@ function startTrajet(gsap: any) {
       const u = 1 - progress, t = progress;
       const x = u*u*u*sx + 3*u*u*t*c1x + 3*u*t*t*c2x + t*t*t*ex + lat*Math.sin(progress*Math.PI);
       const y = u*u*u*sy + 3*u*u*t*c1y + 3*u*t*t*c2y + t*t*t*ey;
-      const img = trailImgs[idx] as HTMLImageElement;
-      const s = imgRef;
-      gsap.killTweensOf(img); gsap.set(img, { width:s, height:s });
-      const ub = CFG.p_blur > 0;
-      gsap.timeline()
-        .set(img, { opacity:1, scale:1, x:x-s/2, y:y-s/2, zIndex:++z, rotation:0, ...(ub?{filter:'blur(0px)'}:{filter:'none'}) })
-        .to(img, { duration:CFG.p_fadeDuration, ease:'power3.out', scale:0.5, opacity:CFG.p_fadeOpacity, ...(ub?{filter:`blur(${CFG.p_blur}px)`}:{}) }, CFG.p_fadeDelay);
+      const entry = pixelTrail.acquire(idx, imgRef);
+      spawnMesh(
+        gsap, entry,
+        x, y,
+        imgRef, ++z,
+        CFG.p_fadeDelay, CFG.p_fadeDuration, CFG.p_fadeOpacity,
+        CFG.p_blur, CFG.p_pixel, CFG.p_scaleFinal,
+      );
       idx = (idx+1) % trailImgs.length;
     }
     globalT = (globalT + CFG.p_stepSize) % 1;
@@ -338,14 +466,15 @@ function startMouseSim(gsap: any) {
     smY += (ty - smY) * CFG.m_smoothing;
     moveCursor(smX, smY);
     if (ts - lastSpawn > CFG.m_interval && Math.hypot(smX-lastX, smY-lastY) > CFG.m_threshold) {
-      const img = trailImgs[idx] as HTMLImageElement;
-      const s = imgRef;
-      gsap.killTweensOf(img); gsap.set(img, { width:s, height:s });
-      const ub = CFG.m_blur > 0;
-      gsap.timeline()
-        .set(img, { opacity:1, scale:1, x:smX-s/2, y:smY-s/2, zIndex:++z, ...(ub?{filter:'blur(0px)'}:{filter:'none'}) })
-        .to(img, { duration:CFG.m_slideDuration, ease:'expo.out', x:tx-s/2, y:ty-s/2 }, 0)
-        .to(img, { duration:CFG.m_fadeDuration, ease:'power3.out', scale:0, opacity:CFG.m_fadeOpacity, ...(ub?{filter:`blur(${CFG.m_blur}px)`}:{}) }, CFG.m_fadeDelay);
+      const entry = pixelTrail.acquire(idx, imgRef);
+      spawnMesh(
+        gsap, entry,
+        smX, smY,
+        imgRef, ++z,
+        CFG.m_fadeDelay, CFG.m_fadeDuration, CFG.m_fadeOpacity,
+        CFG.m_blur, CFG.m_pixel, CFG.m_scaleFinal,
+        tx, ty, CFG.m_slideDuration,
+      );
       idx = (idx+1) % trailImgs.length;
       lastX = smX; lastY = smY; lastSpawn = ts;
     }
@@ -366,31 +495,21 @@ function startRandom(gsap: any) {
 
   function spawnOne() {
     const hr = hero.getBoundingClientRect();
-    // Zone d'apparition : pourcentage de la hero
     const zoneW = hr.width  * CFG.x_zone / 100;
     const zoneH = hr.height * CFG.x_zone / 100;
     const offX  = (hr.width  - zoneW) / 2;
     const offY  = (hr.height - zoneH) / 2;
-
-    // Position de base dans la zone
     const baseX = offX + Math.random() * zoneW;
     const baseY = offY + Math.random() * zoneH;
-
-    // Dispersion aléatoire pondérée par x_randomness
     const disp = CFG.x_dispersion * (CFG.x_randomness / 100);
     let x = baseX + rand(-disp, disp);
     let y = baseY + rand(-disp, disp);
-
-    // Gravité légère vers le centre
     x += (cx - x) * CFG.x_gravity * 0.01;
     y += (cy - y) * CFG.x_gravity * 0.01;
-
     x = Math.max(0, Math.min(hr.width,  x));
     y = Math.max(0, Math.min(hr.height, y));
-
     if (tooClose(x, y)) return;
 
-    // Exclure la zone du texte hero
     const textEl = hero.querySelector('.hero-text') as HTMLElement;
     if (textEl) {
       const tr = textEl.getBoundingClientRect();
@@ -403,17 +522,16 @@ function startRandom(gsap: any) {
     const scaleV = 1 + rand(-CFG.x_scaleVar, CFG.x_scaleVar);
     const s = sBase * scaleV;
 
-    const img = trailImgs[idx] as HTMLImageElement;
-    gsap.killTweensOf(img);
-    gsap.set(img, { width:s, height:s });
-    const ub = CFG.x_blur > 0;
-    gsap.timeline()
-      .set(img, { opacity: CFG.x_opacity, scale:1, x:x-s/2, y:y-s/2, zIndex:++z,
-        ...(ub?{filter:'blur(0px)'}:{filter:'none'}) })
-      .to(img, { duration:CFG.x_fadeDuration, ease:'power2.out',
-        scale: 0,
-        opacity: CFG.x_fadeOpacity,
-        ...(ub?{filter:`blur(${CFG.x_blur}px)`}:{}) }, CFG.x_fadeDelay);
+    const entry = pixelTrail.acquire(idx, s);
+    spawnMesh(
+      gsap, entry,
+      x, y,
+      s, ++z,
+      CFG.x_fadeDelay, CFG.x_fadeDuration, CFG.x_fadeOpacity,
+      CFG.x_blur, CFG.x_pixel, CFG.x_scaleFinal,
+      undefined, undefined, undefined,
+      CFG.x_opacity,
+    );
     idx = (idx+1) % trailImgs.length;
 
     lastPositions.push({ x, y });
@@ -613,10 +731,12 @@ function buildDebug() {
       </div>
       <div class="d-axis-block d-axis-fade">
         <div class="d-axis-label">Disparition</div>
-        ${sl('d_fadeDelay',   'Délai s',    0,   2,   0.05)}
-        ${sl('d_fadeDuration','Durée s',    0.1, 3,   0.05)}
-        ${sl('d_fadeOpacity', 'Opacité fin',0,   1,   0.05)}
-        ${sl('d_blur',        'Flou px',    0,   200, 1)}
+        ${sl('d_fadeDelay',   'Délai s',       0,   2,   0.05)}
+        ${sl('d_fadeDuration','Durée s',       0.1, 3,   0.05)}
+        ${sl('d_fadeOpacity', 'Opacité fin',   0,   1,   0.05)}
+        ${sl('d_blur',        'Flou px',       0,   200, 1)}
+        ${sl('d_pixel',       'Pixelisation',  0,   100, 1)}
+        ${sl('d_scaleFinal',  'Éch. finale',   0,   1,   0.05)}
       </div>
       ${presets('d')}
     </div>
@@ -655,10 +775,12 @@ function buildDebug() {
       </div>
       <div class="d-axis-block d-axis-fade">
         <div class="d-axis-label">Disparition</div>
-        ${sl('t_fadeDelay',   'Délai s',    0,   3,   0.05)}
-        ${sl('t_fadeDuration','Durée s',    0.1, 4,   0.05)}
-        ${sl('t_fadeOpacity', 'Opacité fin',0,   1,   0.05)}
-        ${sl('t_blur',        'Flou px',    0,   200, 1)}
+        ${sl('t_fadeDelay',   'Délai s',      0,   3,   0.05)}
+        ${sl('t_fadeDuration','Durée s',      0.1, 4,   0.05)}
+        ${sl('t_fadeOpacity', 'Opacité fin',  0,   1,   0.05)}
+        ${sl('t_blur',        'Flou px',      0,   200, 1)}
+        ${sl('t_pixel',       'Pixelisation', 0,   100, 1)}
+        ${sl('t_scaleFinal',  'Éch. finale',  0,   1,   0.05)}
       </div>
       ${presets('t')}
     </div>
@@ -686,10 +808,12 @@ function buildDebug() {
       </div>
       <div class="d-axis-block d-axis-fade">
         <div class="d-axis-label">Disparition</div>
-        ${sl('r_fadeDelay',   'Délai s',    0,   3,   0.05)}
-        ${sl('r_fadeDuration','Durée s',    0.1, 4,   0.05)}
-        ${sl('r_fadeOpacity', 'Opacité fin',0,   1,   0.05)}
-        ${sl('r_blur',        'Flou px',    0,   200, 1)}
+        ${sl('r_fadeDelay',   'Délai s',      0,   3,   0.05)}
+        ${sl('r_fadeDuration','Durée s',      0.1, 4,   0.05)}
+        ${sl('r_fadeOpacity', 'Opacité fin',  0,   1,   0.05)}
+        ${sl('r_blur',        'Flou px',      0,   200, 1)}
+        ${sl('r_pixel',       'Pixelisation', 0,   100, 1)}
+        ${sl('r_scaleFinal',  'Éch. finale',  0,   1,   0.05)}
       </div>
       ${presets('r')}
     </div>
@@ -711,10 +835,12 @@ function buildDebug() {
       </div>
       <div class="d-axis-block d-axis-fade">
         <div class="d-axis-label">Disparition</div>
-        ${sl('p_fadeDelay',   'Délai s',    0,   3,   0.05)}
-        ${sl('p_fadeDuration','Durée s',    0.1, 4,   0.05)}
-        ${sl('p_fadeOpacity', 'Opacité fin',0,   1,   0.05)}
-        ${sl('p_blur',        'Flou px',    0,   200, 1)}
+        ${sl('p_fadeDelay',   'Délai s',      0,   3,   0.05)}
+        ${sl('p_fadeDuration','Durée s',      0.1, 4,   0.05)}
+        ${sl('p_fadeOpacity', 'Opacité fin',  0,   1,   0.05)}
+        ${sl('p_blur',        'Flou px',      0,   200, 1)}
+        ${sl('p_pixel',       'Pixelisation', 0,   100, 1)}
+        ${sl('p_scaleFinal',  'Éch. finale',  0,   1,   0.05)}
       </div>
       ${presets('p')}
     </div>
@@ -765,6 +891,8 @@ function buildDebug() {
         ${sl('m_fadeDuration','Durée s',      0.1, 3,   0.05)}
         ${sl('m_fadeOpacity', 'Opacité fin',  0,   1,   0.05)}
         ${sl('m_blur',        'Flou px',      0,   200, 1)}
+        ${sl('m_pixel',       'Pixelisation', 0,   100, 1)}
+        ${sl('m_scaleFinal',  'Éch. finale',  0,   1,   0.05)}
       </div>
       <button class="d-b d-action-btn" id="d-m-from-desktop">↙ Sync depuis imgTrail</button>
       ${presets('m')}
@@ -792,10 +920,12 @@ function buildDebug() {
       </div>
       <div class="d-axis-block d-axis-fade">
         <div class="d-axis-label">Disparition</div>
-        ${sl('x_fadeDelay',   'Délai s',    0,   3,   0.05)}
-        ${sl('x_fadeDuration','Durée s',    0.1, 4,   0.05)}
-        ${sl('x_fadeOpacity', 'Opacité fin',0,   1,   0.05)}
-        ${sl('x_blur',        'Flou px',    0,   200, 1)}
+        ${sl('x_fadeDelay',   'Délai s',      0,   3,   0.05)}
+        ${sl('x_fadeDuration','Durée s',      0.1, 4,   0.05)}
+        ${sl('x_fadeOpacity', 'Opacité fin',  0,   1,   0.05)}
+        ${sl('x_blur',        'Flou px',      0,   200, 1)}
+        ${sl('x_pixel',       'Pixelisation', 0,   100, 1)}
+        ${sl('x_scaleFinal',  'Éch. finale',  0,   1,   0.05)}
       </div>
       ${presets('x')}
     </div>
@@ -937,7 +1067,6 @@ function buildDebug() {
 
   /* ── Récupérer du desktop (MouseSim ← imgTrail) ── */
   el.querySelector('#d-m-from-desktop')?.addEventListener('click', () => {
-    // Copier les paramètres partagés : fade, blur, slide
     CFG.m_slideDuration = CFG.d_slideDuration;
     CFG.m_fadeDelay     = CFG.d_fadeDelay;
     CFG.m_fadeDuration  = CFG.d_fadeDuration;

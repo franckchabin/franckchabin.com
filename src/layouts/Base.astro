@@ -64,22 +64,34 @@ const ogImageUrl = ogImage ? new URL(`${BASE}${ogImage}`, siteUrl).href : new UR
   <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
   <link rel="dns-prefetch" href="https://res.cloudinary.com" />
 
-  <!-- Polices Google Fonts — display=block évite le flash de substitution -->
+  <!-- Polices Google Fonts — chargées en ASYNCHRONE (media=print + onload) pour
+       ne PAS bloquer le rendu ni l'exécution des scripts (sinon la traînée
+       attend cette CSS distante avant de démarrer). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=block"
     rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=swap"
+    media="print"
+    onload="this.media='all'"
   />
+  <noscript>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=swap"
+    />
+  </noscript>
 
-  <!-- GSAP — uniquement sur les pages qui en ont besoin (ex: homepage) -->
-  {loadGsap && <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>}
+  <!-- GSAP — hébergé en local (même origine = chargement instantané, plus de CDN) -->
+  {loadGsap && <link rel="preload" as="script" href={`${BASE}js/gsap.min.js`} />}
+  {loadGsap && <script src={`${BASE}js/gsap.min.js`} defer></script>}
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href={`${BASE}favicon.svg`} />
 
   <title>{title}</title>
   <Fragment set:html={`<style>@font-face{font-family:'Maria Unconnected';src:url('${BASE}fonts/maria-unconnected.woff') format('woff');font-weight:normal;font-style:normal;font-display:block;}</style>`} />
+  <slot name="head" />
 </head>
 <body>
   <Nav />

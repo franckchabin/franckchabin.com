@@ -78,6 +78,13 @@ const projects = [
 
 <Base title="Franck Chabin" description="Créatif indépendant basé à Paris. Je me passionne pour la conception et l'exécution de projets graphiques, dont mes domaines d'expertise incluent la création d'objets d'édition, d'identités visuelles, de dessin de caractères, et d'interface Web." ogImage="images/opengraph/©franckchabin_Home-About_Open-Graph.webp" loadGsap={true}>
 
+  <!-- Préchargement des images du trail → apparition instantanée -->
+  <Fragment slot="head">
+    {trailImages.map(src => (
+      <link rel="preload" as="image" href={src} fetchpriority="high" />
+    ))}
+  </Fragment>
+
   <!-- ===== HERO ===== -->
   <section class="hero" id="hero">
 
@@ -310,3 +317,15 @@ const projects = [
 </style>
 
 <script src="../scripts/trail.ts"></script>
+<script>
+  /* Perso 3D masqué (désactivé). Bonus : plus de modèle .glb à charger ni de
+     2e contexte WebGL → démarrage encore plus léger.
+     Pour le réafficher, décommenter le bloc ci-dessous. */
+  // import { initHero3D } from '../scripts/hero3D';
+  // const hero = document.getElementById('hero');
+  // if (hero) {
+  //   const start = () => initHero3D(hero, '/3dBoy.glb');
+  //   if ('requestIdleCallback' in window) (window as any).requestIdleCallback(start, { timeout: 1500 });
+  //   else setTimeout(start, 300);
+  // }
+</script>

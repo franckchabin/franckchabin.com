@@ -78,10 +78,13 @@ const projects = [
 
 <Base title="Franck Chabin" description="Créatif indépendant basé à Paris. Je me passionne pour la conception et l'exécution de projets graphiques, dont mes domaines d'expertise incluent la création d'objets d'édition, d'identités visuelles, de dessin de caractères, et d'interface Web." ogImage="images/opengraph/©franckchabin_Home-About_Open-Graph.webp" loadGsap={true}>
 
-  <!-- Préchargement des images du trail → apparition instantanée -->
+  <!-- Préchargement des 18 images du trail, en priorité NORMALE (pas "high") :
+       en priorité haute elles passaient devant Three.js, qui attendait 1,6 Mo
+       d'images avant de démarrer (~5s). Toutes restent préchargées → la traînée
+       les a sous la main, mais le moteur Three.js charge en premier. -->
   <Fragment slot="head">
     {trailImages.map(src => (
-      <link rel="preload" as="image" href={src} fetchpriority="high" />
+      <link rel="preload" as="image" href={src} />
     ))}
   </Fragment>
 

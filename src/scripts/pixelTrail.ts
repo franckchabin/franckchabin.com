@@ -165,6 +165,14 @@ export class PixelTrail {
   }
 
   acquire(texIdx: number, size: number): TrailMesh {
+    /* Si l'image demandée n'est pas encore chargée (réseau lent au 1er
+       affichage), on bascule sur une image déjà chargée → jamais de case vide
+       dans la traînée le temps que les autres se téléchargent. */
+    if (!this.textures[texIdx]) {
+      const loaded = this.textures.findIndex(t => t);
+      if (loaded >= 0) texIdx = loaded;
+    }
+
     const free = (p: TrailMesh) => p.mat.uniforms.u_opacity.value < 0.01;
 
     /* Priorité : (1) mesh libre avec la bonne texture, (2) n'importe quel mesh

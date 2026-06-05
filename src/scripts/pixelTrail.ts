@@ -99,6 +99,7 @@ export class PixelTrail {
   private canvas:   HTMLCanvasElement;
   private rafId:    number | null = null;
   private _tick = 0; // horloge logique pour le LRU
+  private _fallbackTick = 0; // cycle parmi les images chargées tant que tout n'est pas prêt
   heroW = 0;
   heroH = 0;
 
@@ -169,6 +170,15 @@ export class PixelTrail {
   }
 
   acquire(texIdx: number, size: number): TrailMesh {
+    /* Image demandée pas encore téléchargée (réseau) → on prend une image DÉJÀ
+       chargée, en CYCLANT parmi elles : variété garantie, jamais la même en
+       boucle, et zéro case vide. Dès que tout est chargé, ce bloc ne sert plus. */
+    if (!this.textures[texIdx]) {
+      const loaded: number[] = [];
+      for (let i = 0; i < this.textures.length; i++) if (this.textures[i]) loaded.push(i);
+      if (loaded.length) texIdx = loaded[this._fallbackTick++ % loaded.length];
+    }
+
     const free = (p: TrailMesh) => p.mat.uniforms.u_opacity.value < 0.01;
 
     /* Priorité : (1) mesh libre avec la bonne texture, (2) n'importe quel mesh

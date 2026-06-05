@@ -24,7 +24,7 @@ function diag(msg: string) {
 }
 (window as any).__trailDiag = diag;
 let __firstSpawn = true;
-diag('Three.js chargé + script exécuté');
+diag('JS trail exécuté (plus de Three.js)');
 
 /* ── Map timeline par mesh ────────────────────────────────────────
    gsap.killTweensOf() ne tue pas les tl.call() (callbacks).

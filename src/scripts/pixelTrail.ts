@@ -145,6 +145,10 @@ export class PixelTrail {
         this.textures[i] = tex;
         /* Upload GPU immédiat → pas de freeze au premier rendu de cette image */
         this.renderer.initTexture(tex);
+        if (!(window as any).__firstTexLogged) {
+          (window as any).__firstTexLogged = true;
+          (window as any).__trailDiag?.('1ère image téléchargée');
+        }
       });
     });
 

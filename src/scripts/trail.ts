@@ -5,6 +5,27 @@
    ================================================================ */
 import { PixelTrail, type TrailMesh } from './pixelTrail';
 
+/* ── DIAGNOSTIC de démarrage (visible seulement avec ?diag dans l'URL) ──
+   Affiche à l'écran à quelle ms chaque étape arrive → localise le délai.
+   Ex : franckchabin.com/?diag                                            */
+const __diagOn = typeof location !== 'undefined' && location.search.includes('diag');
+let __diagEl: HTMLElement | null = null;
+function diag(msg: string) {
+  if (!__diagOn) return;
+  if (!__diagEl) {
+    __diagEl = document.createElement('div');
+    __diagEl.style.cssText =
+      'position:fixed;top:8px;left:8px;z-index:999999;background:rgba(0,0,0,.85);' +
+      'color:#0f0;font:12px/1.5 monospace;padding:8px 10px;white-space:pre;' +
+      'pointer-events:none;border-radius:6px';
+    document.body.appendChild(__diagEl);
+  }
+  __diagEl.textContent += `${msg} : ${Math.round(performance.now())} ms\n`;
+}
+(window as any).__trailDiag = diag;
+let __firstSpawn = true;
+diag('Three.js chargé + script exécuté');
+
 /* ── Map timeline par mesh ────────────────────────────────────────
    gsap.killTweensOf() ne tue pas les tl.call() (callbacks).
    On stocke le timeline courant pour pouvoir tl.kill() en entier.
@@ -126,6 +147,7 @@ function spawnMesh(
   e.mat.uniforms.u_dissolve.value    = 0;
   e.mat.uniforms.u_blur.value        = 0;
   e.mesh.visible = true;
+  if (__firstSpawn) { __firstSpawn = false; diag('1ère image affichée ✓'); }
 
   const tl = g.timeline();
   meshTl.set(e, tl); // enregistrer pour pouvoir le tuer en entier
@@ -558,6 +580,7 @@ loadProdConfig();
 /* ── LAUNCH ── */
 function launch() {
   waitForGSAP(gsap => {
+    diag('GSAP prêt');
     stopAll(); measure();
     switch (CFG.animMode) {
       case 'imgtrail': startDesktop(gsap); break;

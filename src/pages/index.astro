@@ -78,9 +78,12 @@ const projects = [
 
 <Base title="Franck Chabin" description="Créatif indépendant basé à Paris. Je me passionne pour la conception et l'exécution de projets graphiques, dont mes domaines d'expertise incluent la création d'objets d'édition, d'identités visuelles, de dessin de caractères, et d'interface Web." ogImage="images/opengraph/©franckchabin_Home-About_Open-Graph.webp" loadGsap={true}>
 
-  <!-- Préchargement des images du trail → apparition instantanée -->
+  <!-- Préchargement des PREMIÈRES images du trail seulement (assez pour démarrer).
+       Précharger les 18 en priorité haute noyait le JS Three.js → démarrage lent.
+       Le reste se charge normalement, et la traînée gère les images pas encore
+       prêtes (elle réutilise une image déjà chargée en attendant). -->
   <Fragment slot="head">
-    {trailImages.map(src => (
+    {trailImages.slice(0, 4).map(src => (
       <link rel="preload" as="image" href={src} fetchpriority="high" />
     ))}
   </Fragment>

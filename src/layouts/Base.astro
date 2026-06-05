@@ -101,15 +101,28 @@ const ogImageUrl = ogImage ? new URL(`${BASE}${ogImage}`, siteUrl).href : new UR
   <Footer />
   <script>
     function initMedia() {
-      // Cards homepage : détecte si autoplay fonctionne, sinon montre le poster
-      document.querySelectorAll('video.project-card-visual').forEach(v => {
-        const video = v as HTMLVideoElement;
-        video.play().then(() => {
-          video.classList.add('is-playing');
-        }).catch(() => {
-          // Autoplay bloqué (Low Power Mode, etc.) → le poster reste visible
-        });
-      });
+      // Cards homepage : on ne lance la vidéo QUE quand elle entre dans le
+      // viewport (sinon les 3 vidéos se téléchargent au chargement et volent
+      // la bande passante à la traînée du hero → démarrage lent).
+      const cardVideos = Array.from(
+        document.querySelectorAll<HTMLVideoElement>('video.project-card-visual')
+      );
+      if (cardVideos.length) {
+        const playObs = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              const video = e.target as HTMLVideoElement;
+              video.play().then(() => {
+                video.classList.add('is-playing');
+              }).catch(() => {
+                // Autoplay bloqué (Low Power Mode, etc.) → le poster reste visible
+              });
+              playObs.unobserve(video);
+            }
+          });
+        }, { rootMargin: '300px 0px', threshold: 0 });
+        cardVideos.forEach(v => playObs.observe(v));
+      }
 
       // Lazy-load des vidéos avec data-src (pages projet)
       const lazyVideos = Array.from(document.querySelectorAll('video[data-src]')) as HTMLVideoElement[];

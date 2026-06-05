@@ -25,7 +25,7 @@ const videoPoster = customPoster || (video ? video.replace(/\.mp4$/, '.jpg') : u
   <div class="project-card-media">
     {video ? (
       <Fragment>
-        <video src={video} loop muted playsinline preload="none" class="project-card-visual" />
+        <video src={video} autoplay loop muted playsinline preload="none" class="project-card-visual" />
         <img src={videoPoster} alt={`Projet ${title}`} loading="lazy" class="project-card-visual project-card-poster" />
       </Fragment>
     ) : image ? (

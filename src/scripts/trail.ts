@@ -53,13 +53,13 @@ const CFG: Record<string, any> = {
 
   // imgTrail (desktop)
   d_threshold: 30, d_lerp: 0.36, d_slideDuration: 0.1,
-  d_fadeDelay: 0.55, d_fadeDuration: 0.7, d_fadeOpacity: 1,
-  d_blur: 176, d_pixel: 24, d_scaleFinal: 0.6,
+  d_fadeDelay: 0.55, d_fadeDuration: 1.3, d_fadeOpacity: 1,
+  d_blur: 79, d_pixel: 22, d_scaleFinal: 0.35,
   // imgTrail — fausse perspective (taille selon la hauteur)
   d_persp: 0,            // 0 = off, 1 = on
   d_perspLine: 0.76,     // ligne pivot (fraction hauteur hero) = ligne de retournement
-  d_perspTop: 0.4,       // échelle en haut de l'écran (petit)
-  d_perspBottom: 1.4,    // échelle en bas (grand)
+  d_perspTop: 0.1,       // échelle en haut de l'écran (petit)
+  d_perspBottom: 3,      // échelle en bas (grand)
 
   // Spirale
   t_interval: 172, t_radiusMin: 15, t_radiusMax: 96,
@@ -82,16 +82,16 @@ const CFG: Record<string, any> = {
   // Mouse simulation — mouvement
   m_speed: 0.017,
   m_amplX: 41, m_amplY: 23, m_freqX: 2.35, m_freqY: 1.1,
-  m_offsetX: 0, m_offsetY: 32,
+  m_offsetX: 0, m_offsetY: -18,
   m_smoothing: 0.10, m_gravity: 0,
   // Mouse simulation — apparition
   m_threshold: 30, m_interval: 60,
   m_slideDuration: 0.1,
-  // Mouse simulation — disparition (alignée sur le desktop imgTrail)
-  m_fadeDelay: 0.55, m_fadeDuration: 0.7, m_fadeOpacity: 1,
-  m_blur: 176, m_pixel: 24, m_scaleFinal: 0.6,
+  // Mouse simulation — disparition
+  m_fadeDelay: 0.55, m_fadeDuration: 1.3, m_fadeOpacity: 1,
+  m_blur: 79, m_pixel: 100, m_scaleFinal: 0,
   // Mouse simulation — affichage
-  m_showCursor: 1, m_showAmpl: 0,
+  m_showCursor: 1, m_showAmpl: 1,
 
   // Random (mobile)
   x_interval: 300, x_density: 2, x_dispersion: 80,

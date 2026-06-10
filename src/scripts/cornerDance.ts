@@ -29,6 +29,8 @@ interface Options {
   flatOutline?: boolean;    // aplat + contour PAR objet (inverted hull) — pièces séparées
   fillColor?: string;       // couleur d'aplat (sans texture)
   outlineThickness?: number;// épaisseur du contour par objet (fraction de la taille)
+  onProximity?: (near: boolean) => void;  // entrée/sortie de la zone du perso (coucou)
+  onZoneClick?: () => void;               // clic dans la zone du perso
   params?: Partial<typeof DEFAULT_P>;  // surcharges de paramètres par instance
 }
 
@@ -126,6 +128,9 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
   if (opts.params) Object.assign(P, opts.params);
   if (opts.pixelSize != null) P.pixelSize = opts.pixelSize;
   if (opts.chill) { P.waveEnabled = false; P.pointEnabled = false; }
+  /* Mobile (tactile, piloté par le mousesim) : pas de coucou ni de hover/clic */
+  const isTouch = typeof window !== 'undefined' && window.matchMedia('(hover:none)').matches;
+  if (isTouch) P.waveEnabled = false;
 
   let W = mount.clientWidth  || 300;
   let H = mount.clientHeight || 390;
@@ -225,6 +230,9 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
   let smoothArm = 1;   // activité (souris bouge) → fade rapide de la baguette
   const onMove = (e: MouseEvent) => { mouseX = e.clientX; mouseY = e.clientY; lastMoveMs = performance.now(); };
   window.addEventListener('mousemove', onMove);
+  let curInZone = false;   // curseur dans la zone du perso (coucou)
+  const onClick = () => { if (curInZone) opts.onZoneClick?.(); };
+  if (opts.onZoneClick && !isTouch) window.addEventListener('click', onClick);
 
   /* ── Os ── */
   const bones: Record<string, THREE.Object3D> = {};
@@ -603,6 +611,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         const cxC = rect.left + rect.width * 0.5;
         const cyC = rect.top  + rect.height * (0.5 - WAVE.zoneUp);   // zone remontée vers le haut
         const inZone = Math.hypot(mouseX - cxC, mouseY - cyC) < P.waveRadius;
+        if (!isTouch && inZone !== curInZone) { curInZone = inZone; opts.onProximity?.(inZone); }
         waveDwell = inZone ? waveDwell + dt : 0;
         /* Outline gris : fondu d'opacité 0→1 en ~0,6 s à l'entrée dans la zone */
         const oStep = dt / 0.6;
@@ -868,6 +877,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
   return () => {
     cancelAnimationFrame(rafId);
     window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('click', onClick);
     ro.disconnect();
     composer.dispose();
     renderer.dispose();

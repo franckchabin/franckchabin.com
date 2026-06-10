@@ -45,6 +45,7 @@ const isHome = currentPath === `${BASE}`;
       <span class="btn nav-disponible">· Disponible</span>
       <a
         href={`${BASE}about`}
+        data-nav="about"
         class:list={["btn", { active: currentPath === `${BASE}about/` || currentPath === `${BASE}about` }]}
       >
         À propos

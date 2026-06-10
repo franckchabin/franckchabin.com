@@ -199,7 +199,8 @@ video {
 }
 
 .btn:hover,
-.btn.active {
+.btn.active,
+.btn.is-faux-hover {
   background-color: var(--color-text);
   color: var(--color-bg);
 }

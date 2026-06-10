@@ -187,6 +187,12 @@ const projects = [
     cursor: default;
   }
 
+  /* Curseur "main" quand on est dans la zone du perso (cliquable → À propos) */
+  .hero.dance-pointer,
+  .hero.dance-pointer * {
+    cursor: pointer !important;
+  }
+
   /* --- Animation trail = FOND (z-index le plus bas) --- */
   .hero-trail {
     position: absolute;
@@ -363,6 +369,16 @@ const projects = [
       initCornerDance(danceMount, `/3Dboy/perso_rigge.glb?v=${glbV}`, {
         pixelSize: 2,
         tunable: true,                       // ⚙ panneau de réglages (mettre false en prod)
+        // Survol du perso (zone coucou) → le bouton "À propos" se met en hover.
+        // Clic dans la zone → navigation vers la page À propos.
+        onProximity: (near) => {
+          document.querySelectorAll('[data-nav="about"]').forEach((el) => el.classList.toggle('is-faux-hover', near));
+          document.getElementById('hero')?.classList.toggle('dance-pointer', near);   // curseur "main"
+        },
+        onZoneClick: () => {
+          const about = document.querySelector('[data-nav="about"]') as HTMLAnchorElement | null;
+          window.location.href = about?.getAttribute('href') || '/about';
+        },
       });
     if ('requestIdleCallback' in window) (window as any).requestIdleCallback(danceStart, { timeout: 1500 });
     else setTimeout(danceStart, 300);

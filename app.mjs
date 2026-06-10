@@ -4,13 +4,14 @@
 
 import { createServer } from 'node:http';
 import { execSync, spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, openSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PORT = 3333;
 const DEV_PORT = 4321;
+const DEV_LOG = '/tmp/franckchabin-dev.log';
 const DEV_URL = `http://localhost:${DEV_PORT}/`;
 const LIVE_URL = 'https://franckchabin.com';
 
@@ -62,20 +63,38 @@ function handleAPI(pathname, params, res) {
       devProcess = null;
       return json(res, { ok: true, message: 'Serveur arrêté.' });
     }
-    if (!existsSync(`${ROOT}/node_modules`)) {
+    const astroBin = join(ROOT, 'node_modules', 'astro', 'astro.js');
+    if (!existsSync(astroBin)) {
       const install = exec('npm install');
       if (!install.ok) return json(res, { ok: false, message: 'Erreur npm install :\n' + install.output });
     }
-    devProcess = spawn('npx astro dev', {
-      cwd: ROOT, shell: true, stdio: 'ignore', detached: false,
+    // Lancer Astro directement avec le Node courant (pas de dépendance à npx/PATH,
+    // ce qui plantait silencieusement quand l'app est ouverte depuis le Finder).
+    // Diagnostic en tête de log : on veut voir l'arch réelle du Node utilisé.
+    writeFileSync(DEV_LOG,
+      `--- Lancement dev ---\n` +
+      `node    : ${process.execPath}\n` +
+      `version : ${process.version}\n` +
+      `arch    : ${process.arch}\n` +
+      `platform: ${process.platform}\n` +
+      `---------------------\n`);
+    const logFd = openSync(DEV_LOG, 'a');
+    devProcess = spawn(process.execPath, [astroBin, 'dev', '--port', String(DEV_PORT)], {
+      cwd: ROOT, stdio: ['ignore', logFd, logFd], detached: false,
       env: { ...process.env, FORCE_COLOR: '0' },
     });
     devProcess.on('close', () => { devProcess = null; });
     return new Promise(resolve => {
       setTimeout(() => {
-        json(res, { ok: true, message: `Serveur lancé !`, devRunning: true });
+        if (isDevRunning()) {
+          json(res, { ok: true, message: 'Serveur lancé !', devRunning: true });
+        } else {
+          let log = '';
+          try { log = readFileSync(DEV_LOG, 'utf8').trim().split('\n').slice(-15).join('\n'); } catch {}
+          json(res, { ok: false, message: 'Le serveur a planté au démarrage :\n\n' + (log || '(aucun log)'), devRunning: false });
+        }
         resolve();
-      }, 2000);
+      }, 2500);
     });
   }
 

@@ -31,6 +31,7 @@ diag('JS trail exécuté (plus de Three.js)');
    On stocke le timeline courant pour pouvoir tl.kill() en entier.
    ─────────────────────────────────────────────────────────────── */
 const meshTl = new WeakMap<TrailMesh, any>();
+const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 
 const hero = document.getElementById('hero');
 const trailImgs = Array.from(document.querySelectorAll('.hero-trail-img'));
@@ -51,9 +52,14 @@ const CFG: Record<string, any> = {
   centerOnPhoto: true,
 
   // imgTrail (desktop)
-  d_threshold: 65, d_lerp: 0.36, d_slideDuration: 0.25,
-  d_fadeDelay: 0.3, d_fadeDuration: 0.9, d_fadeOpacity: 1,
-  d_blur: 39, d_pixel: 65, d_scaleFinal: 0.8,
+  d_threshold: 30, d_lerp: 0.36, d_slideDuration: 0.1,
+  d_fadeDelay: 0.55, d_fadeDuration: 0.7, d_fadeOpacity: 1,
+  d_blur: 176, d_pixel: 24, d_scaleFinal: 0.6,
+  // imgTrail — fausse perspective (taille selon la hauteur)
+  d_persp: 0,            // 0 = off, 1 = on
+  d_perspLine: 0.76,     // ligne pivot (fraction hauteur hero) = ligne de retournement
+  d_perspTop: 0.4,       // échelle en haut de l'écran (petit)
+  d_perspBottom: 1.4,    // échelle en bas (grand)
 
   // Spirale
   t_interval: 172, t_radiusMin: 15, t_radiusMax: 96,
@@ -81,9 +87,9 @@ const CFG: Record<string, any> = {
   // Mouse simulation — apparition
   m_threshold: 30, m_interval: 60,
   m_slideDuration: 0.1,
-  // Mouse simulation — disparition
-  m_fadeDelay: 0.3, m_fadeDuration: 0.9, m_fadeOpacity: 0.2,
-  m_blur: 0, m_pixel: 100, m_scaleFinal: 0,
+  // Mouse simulation — disparition (alignée sur le desktop imgTrail)
+  m_fadeDelay: 0.55, m_fadeDuration: 0.7, m_fadeOpacity: 1,
+  m_blur: 176, m_pixel: 24, m_scaleFinal: 0.6,
   // Mouse simulation — affichage
   m_showCursor: 1, m_showAmpl: 0,
 
@@ -325,11 +331,22 @@ function startDesktop(gsap: any) {
     requestAnimationFrame(loop);
   }
   function show() {
-    const entry = pixelTrail.acquire(idx, imgRef);
+    /* Fausse perspective : petit en haut (perso retourné), grand en bas (devant),
+       pivot sur la ligne de retournement. */
+    let size = imgRef;
+    if (CFG.d_persp) {
+      const hr = hero.getBoundingClientRect();
+      const lineY = hr.height * CFG.d_perspLine;
+      const scale = sm.y < lineY
+        ? lerp(CFG.d_perspTop, 1, lineY > 0 ? sm.y / lineY : 1)
+        : lerp(1, CFG.d_perspBottom, (hr.height - lineY) > 0 ? (sm.y - lineY) / (hr.height - lineY) : 0);
+      size = imgRef * scale;
+    }
+    const entry = pixelTrail.acquire(idx, size);
     spawnMesh(
       gsap, entry,
       sm.x, sm.y,
-      imgRef, ++z,
+      size, ++z,
       CFG.d_fadeDelay, CFG.d_fadeDuration, CFG.d_fadeOpacity,
       CFG.d_blur, CFG.d_pixel, CFG.d_scaleFinal,
       mouse.x, mouse.y, CFG.d_slideDuration,
@@ -487,12 +504,23 @@ function startMouseSim(gsap: any) {
     smX += (tx - smX) * CFG.m_smoothing;
     smY += (ty - smY) * CFG.m_smoothing;
     moveCursor(smX, smY);
+    /* Expose la position simulée → le perso 3D (mobile) la suit */
+    (window as any).__SIM_CURSOR = { x: hr.left + smX, y: hr.top + smY };
     if (ts - lastSpawn > CFG.m_interval && Math.hypot(smX-lastX, smY-lastY) > CFG.m_threshold) {
-      const entry = pixelTrail.acquire(idx, imgRef);
+      /* Même fausse perspective que le desktop (petit en haut, grand en bas) */
+      let size = imgRef;
+      if (CFG.d_persp) {
+        const lineY = hr.height * CFG.d_perspLine;
+        const scale = smY < lineY
+          ? lerp(CFG.d_perspTop, 1, lineY > 0 ? smY / lineY : 1)
+          : lerp(1, CFG.d_perspBottom, (hr.height - lineY) > 0 ? (smY - lineY) / (hr.height - lineY) : 0);
+        size = imgRef * scale;
+      }
+      const entry = pixelTrail.acquire(idx, size);
       spawnMesh(
         gsap, entry,
         smX, smY,
-        imgRef, ++z,
+        size, ++z,
         CFG.m_fadeDelay, CFG.m_fadeDuration, CFG.m_fadeOpacity,
         CFG.m_blur, CFG.m_pixel, CFG.m_scaleFinal,
         tx, ty, CFG.m_slideDuration,
@@ -612,6 +640,10 @@ function relaunch() { launch(); }
 function sl(key: string, label: string, min: number, max: number, step: number) {
   return `<div class="d-sl"><span class="d-lbl">${label}</span><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step}" value="${CFG[key]}"><span class="d-val" data-v="${key}">${CFG[key]}</span></div>`;
 }
+/* Slider pour le PERSO 3D (data-dk → window.__DANCE_CTRL) */
+function sl3d(key: string, label: string, min: number, max: number, step: number, val: number) {
+  return `<div class="d-sl"><span class="d-lbl">${label}</span><input type="range" data-dk="${key}" min="${min}" max="${max}" step="${step}" value="${val}"><span class="d-val" data-dv="${key}">${val}</span></div>`;
+}
 function presets(prefix: string, slots = [1,2,3]) {
   return `<div class="d-presets" data-prefix="${prefix}">
     <div class="d-ps-col"><div class="d-ps-col-label">↓ Sauvegarder</div>
@@ -648,6 +680,8 @@ function buildDebug() {
 /* Sections */
 #dbg .d-sect{display:none}
 #dbg .d-sect.on{display:block}
+#dbg .d-sect-3d{display:block;border-bottom:1px solid rgba(255,255,255,.14);padding-bottom:10px;margin-bottom:10px}
+#dbg .d-3d-chk{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.6);font-size:10px;margin:6px 0}
 #dbg .d-sect-title{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.32);margin-bottom:6px;margin-top:2px}
 /* Sliders */
 #dbg .d-sl{display:flex;align-items:center;gap:6px;white-space:nowrap}
@@ -743,6 +777,31 @@ function buildDebug() {
     <!-- Zones de sections + Apply en bas -->
     <div class="d-bar-scroll">
 
+    <!-- ══ PERSO 3D (toujours visible) ══ -->
+    <div class="d-sect-3d">
+      <div class="d-sect-title">Perso 3D</div>
+      <div class="d-axis-block d-axis-geo">
+        ${sl3d('sizeMul','Taille',0.4,2.2,0.01,0.8)}
+        ${sl3d('facingY','Orientation °',-180,180,1,-18)}
+        ${sl3d('pixelSize','Pixelisation',1,12,1,2)}
+        ${sl3d('headMax','Tête max °',20,120,1,20)}
+        ${sl3d('turnLine','Ligne retourn.',0,1,0.01,0.76)}
+        ${sl3d('armDown','Inclinaison bras',0,1.6,0.01,0.67)}
+        ${sl3d('idleAmount','Mouvements idle',0,2,0.05,1)}
+        ${sl3d('waveRadius','Rayon coucou',40,400,5,200)}
+        ${sl3d('waveRaise','Angle bras coucou',0.5,2,0.05,0.5)}
+        ${sl3d('pointRaise','Baguette hauteur',0,2,0.05,0.55)}
+        ${sl3d('pointSide','Baguette penché',-1.2,1.2,0.05,0.3)}
+        ${sl3d('headTilt','Penché tête',-0.5,0.9,0.01,0)}
+        ${sl3d('ambient','Lumière',0,3,0.05,1.55)}
+        ${sl3d('fresnel','Fresnel',0,2.5,0.05,0.3)}
+        ${sl3d('boredDelay','Ennui délai ms',300,8000,100,1000)}
+        ${sl3d('boredAmp','Ennui ampli',0,1.2,0.05,0.1)}
+      </div>
+      <label class="d-3d-chk"><input type="checkbox" id="d-3d-guides"> Afficher les guides perso</label>
+      <button class="d-b d-action-btn" id="d-3d-copy">Copier valeurs perso</button>
+    </div>
+
     <!-- ══ imgTrail ══ -->
     <div class="d-sect on" data-s="imgtrail">
       <div class="d-sect-title">Image Trail — suivi souris desktop</div>
@@ -751,6 +810,13 @@ function buildDebug() {
         ${sl('d_threshold',    'Sensibilité px',  5,   200, 5)}
         ${sl('d_lerp',         'Fluidité',        0.05,0.5, 0.01)}
         ${sl('d_slideDuration','Glissement s',    0.01,2,   0.01)}
+      </div>
+      <div class="d-axis-block d-axis-geo">
+        <div class="d-axis-label">Perspective (taille selon hauteur)</div>
+        ${sl('d_persp',       'Activer (0/1)', 0,   1,   1)}
+        ${sl('d_perspLine',   'Ligne pivot',   0,   1,   0.01)}
+        ${sl('d_perspTop',    'Échelle haut',  0.1, 1.5, 0.05)}
+        ${sl('d_perspBottom', 'Échelle bas',   0.5, 3,   0.05)}
       </div>
       <div class="d-axis-block d-axis-fade">
         <div class="d-axis-label">Disparition</div>
@@ -1117,6 +1183,35 @@ function buildDebug() {
       if (['t_interval','t_speedStart','t_speedEnd','t_densityMax','t_turns'].includes(k) && CFG.animMode==='spirale') relaunch();
       syncCfgToIframe();
     });
+  });
+
+  /* ── Sliders PERSO 3D (data-dk → window.__DANCE_CTRL) ── */
+  el.querySelectorAll('input[data-dk]').forEach(inp => {
+    const input = inp as HTMLInputElement;
+    const k = input.dataset.dk!;
+    input.addEventListener('input', () => {
+      const v = parseFloat(input.value);
+      const vEl = el.querySelector(`[data-dv="${k}"]`) as HTMLElement;
+      if (vEl) vEl.textContent = input.value;
+      const D = (window as any).__DANCE_CTRL;
+      if (!D) return;
+      if (k === 'boredDelay') D.BORED.delay = v;
+      else if (k === 'boredAmp') { D.BORED.ampX = v; D.BORED.ampY = v * 0.33; }
+      else D.P[k] = v;
+      if (k === 'sizeMul') D.applySize();
+      else if (k === 'facingY') D.applyFacing();
+      else if (k === 'pixelSize') D.applyPixel();
+      else if (k === 'ambient' || k === 'fresnel') D.applyLights();
+    });
+  });
+  const g3d = el.querySelector('#d-3d-guides') as HTMLInputElement | null;
+  if (g3d) g3d.addEventListener('change', () => (window as any).__DANCE_CTRL?.setGuides(g3d.checked));
+  el.querySelector('#d-3d-copy')?.addEventListener('click', () => {
+    const D = (window as any).__DANCE_CTRL;
+    if (!D) return;
+    navigator.clipboard.writeText(JSON.stringify(D.values(), null, 2));
+    const b = el.querySelector('#d-3d-copy') as HTMLElement;
+    b.textContent = 'Copié !'; setTimeout(() => b.textContent = 'Copier valeurs perso', 1500);
   });
 
   /* ── Copier ── */

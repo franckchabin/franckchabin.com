@@ -101,7 +101,14 @@ lsof -ti:$PORT | xargs kill -9 2>/dev/null
 # ─── Lancer le dashboard ───
 
 cd "$PROJECT"
-"$NODE_PATH" app.mjs &
+# Sur Apple Silicon, forcer Node en arm64 natif. Sinon l'app peut démarrer
+# Node en x64 (Rosetta), et Rollup ne trouve pas son binaire natif arm64
+# -> le serveur de dev plante au démarrage ("Cannot find module @rollup/...").
+if [ "$(sysctl -n hw.optional.arm64 2>/dev/null)" = "1" ] && /usr/bin/arch -arm64 true 2>/dev/null; then
+  /usr/bin/arch -arm64 "$NODE_PATH" app.mjs &
+else
+  "$NODE_PATH" app.mjs &
+fi
 SERVER_PID=$!
 
 # Attendre que le serveur soit prêt

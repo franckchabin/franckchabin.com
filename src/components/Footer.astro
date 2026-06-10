@@ -12,17 +12,35 @@ const year = new Date().getFullYear();
 
     <div class="site-footer-block site-footer-block--meta">
       <span>Paris, France — &copy;{year}</span>
+      <a href="mailto:franck.chabin@icloud.com">franck.chabin@icloud.com</a>
     </div>
 
+    <!-- Bonhomme "chill" N&B à la place du contact (même logique responsive : à droite) -->
     <div class="site-footer-block site-footer-block--contact">
-      <span>Contact</span>
-      <a href="mailto:franck.chabin@icloud.com">franck.chabin@icloud.com</a>
+      <div id="footer-dance" class="footer-dance" aria-hidden="true"></div>
     </div>
   </div>
   <div class="site-footer-legal container">
     <span>&copy;franckchabin{year} Tous droits réservés</span>
   </div>
 </footer>
+
+<script>
+  import { initCornerDance } from '../scripts/cornerDance';
+  const mount = document.getElementById('footer-dance');
+  if (mount) {
+    const glbV = import.meta.env.DEV ? Date.now() : '4';
+    const start = () => initCornerDance(mount, `/3Dboy/perso_rigge.glb?v=${glbV}`, {
+      pixelSize: 2,           // légère pixelisation
+      chill: true,            // idle seulement, aucune interaction
+      grayscale: true,        // noir & blanc
+      outlineColor: '#ffffff',// contour blanc détaché au survol (hover)
+      params: { sizeMul: 0.95, facingY: 0, ambient: 1.8, fresnel: 0 },
+    });
+    if ('requestIdleCallback' in window) (window as any).requestIdleCallback(start, { timeout: 1500 });
+    else setTimeout(start, 300);
+  }
+</script>
 
 <style>
   .site-footer {
@@ -33,6 +51,19 @@ const year = new Date().getFullYear();
 
   .site-footer-line-wrap {
     padding: 0 var(--gutter);
+  }
+
+  /* Bloc qui contient le bonhomme : pleine opacité (sinon le canvas est estompé) */
+  .site-footer-block--contact {
+    opacity: 1;
+  }
+  .footer-dance {
+    width: 150px;
+    height: 210px;
+    pointer-events: none;
+  }
+  @media (min-width: 768px) {
+    .footer-dance { width: 190px; height: 260px; }
   }
 
   .site-footer-line {

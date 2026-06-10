@@ -21,6 +21,14 @@ import { BASE } from '../config';
 import Base from '../layouts/Base.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 
+/* ────────────────────────────────────────────────────────────────
+   TOGGLE HERO — bascule simple entre la photo de profil et le
+   modèle 3D dansant (pixelisé), au même emplacement.
+     true  → affiche la photo (portrait.webp)  ← backup
+     false → affiche le danseur 3D
+   ──────────────────────────────────────────────────────────────── */
+const SHOW_PHOTO = false;
+
 
 // Les 18 images de la série hero (pour le trail)
 const trailImages = Array.from({ length: 18 }, (_, i) =>
@@ -109,17 +117,21 @@ const projects = [
     <!-- Contenu visible — AU-DESSUS de l'animation -->
     <div class="hero-content">
 
-      <!-- Photo flush top, taille réduite -->
-      <div class="hero-photo-wrapper">
-        <img
-          src={`${BASE}images/global/portrait.webp`}
-          alt="Franck Chabin"
-          class="hero-photo"
-          width="140"
-          height="140"
-          draggable="false"
-        />
-      </div>
+      <!-- Photo de profil OU danseur 3D — bascule via SHOW_PHOTO -->
+      {SHOW_PHOTO ? (
+        <div class="hero-photo-wrapper">
+          <img
+            src={`${BASE}images/global/portrait.webp`}
+            alt="Franck Chabin"
+            class="hero-photo"
+            width="140"
+            height="140"
+            draggable="false"
+          />
+        </div>
+      ) : (
+        <div id="hero-dance" class="hero-dance" aria-hidden="true"></div>
+      )}
 
       <!-- Espace vide central — la souris ici déclenche le trail -->
       <div class="hero-spacer"></div>
@@ -230,6 +242,14 @@ const projects = [
     object-fit: cover;
   }
 
+  /* --- Danseur 3D — ~2× la taille de la photo, format portrait --- */
+  .hero-dance {
+    width: calc(var(--img-ref-size) * 3);
+    height: calc(var(--img-ref-size) * 3.9);
+    flex-shrink: 0;
+    pointer-events: none;   /* ne bloque pas la zone du trail */
+  }
+
   /* --- Espace central (s'étire pour remplir) --- */
   .hero-spacer {
     flex: 1;
@@ -331,4 +351,20 @@ const projects = [
   //   if ('requestIdleCallback' in window) (window as any).requestIdleCallback(start, { timeout: 1500 });
   //   else setTimeout(start, 300);
   // }
+
+  /* Danseur 3D pixelisé, à la place de la photo (si SHOW_PHOTO = false) */
+  import { initCornerDance } from '../scripts/cornerDance';
+  const danceMount = document.getElementById('hero-dance');
+  if (danceMount) {
+    // Cache-bust : en dev on force le rechargement du GLB (sinon il reste en cache
+    // car chargé en différé). En prod, bump la version à chaque ré-export.
+    const glbV = import.meta.env.DEV ? Date.now() : '4';
+    const danceStart = () =>
+      initCornerDance(danceMount, `/3Dboy/perso_rigge.glb?v=${glbV}`, {
+        pixelSize: 2,
+        tunable: true,                       // ⚙ panneau de réglages (mettre false en prod)
+      });
+    if ('requestIdleCallback' in window) (window as any).requestIdleCallback(danceStart, { timeout: 1500 });
+    else setTimeout(danceStart, 300);
+  }
 </script>

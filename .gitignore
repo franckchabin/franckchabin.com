@@ -10,6 +10,9 @@ dist/
 franckchabin.app
 dashboard/shell/dist/
 
+# Secret (token API GoatCounter) — jamais sur GitHub
+dashboard/secret.json
+
 # Vidéos (trop lourdes pour GitHub)
 public/videos/
 *.mp4

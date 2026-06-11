@@ -29,7 +29,14 @@ const IC = {
   moon: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
   live: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
   rocket:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13c-1.5 1.3-2 5-2 5s3.7-.5 5-2M14 5c4-3 7-2 7-2s1 3-2 7c-2.5 3.3-7 6-7 6l-3-3s2.7-4.5 5-8z"/><circle cx="15" cy="9" r="1.2"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>',
 };
+
+// Couleur stable et distincte dérivée d'un slug (pour les projets sans couleur définie).
+function hashColor(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return `hsl(${h % 360},62%,60%)`; }
+
+// Répartitions GoatCounter : [clé API, titre affiché].
+const BD = [['toprefs', 'Référents'], ['browsers', 'Navigateurs'], ['systems', 'Systèmes'], ['locations', 'Pays'], ['languages', 'Langues'], ['sizes', "Tailles d'écran"]];
 
 function exec(cmd) {
   try {
@@ -189,30 +196,95 @@ function getProjectSlugs() {
   })).filter(p => p.slug);
 }
 
-// Vues par page via les compteurs publics GoatCounter (avec période).
-const _pagesCache = {}, _pagesCacheTime = {};
-async function getPagesTraffic(paths, period) {
-  const code = getGoatcounter();
+// Couleurs dominantes des projets (calculées depuis leurs posters).
+// Accueil = blanc, À propos = gris (neutres), pages cachées = gris foncé.
+const PROJECT_COLORS = {
+  '75000': '#b5c6ec',
+  'golosino': '#e2c5b6',
+  'tiket-culture': '#f99a4c',
+  'fisheye': '#e44211',
+  'anemo': '#e4ccb8',
+  'typographes-createurs-de-caracteres-et-typodiversite': '#83cafa',
+  'vittorine': '#4caf50',
+};
+
+// Token API GoatCounter — lu depuis l'env ou dashboard/secret.json (gitignored).
+function getGCToken() {
+  if (process.env.GOATCOUNTER_TOKEN) return process.env.GOATCOUNTER_TOKEN.trim();
+  try { const j = JSON.parse(readFileSync(join(ROOT, 'dashboard', 'secret.json'), 'utf8')); return (j.token || '').trim(); } catch { return ''; }
+}
+
+function periodStart(period) {
+  const d = new Date();
+  if (period === 'week') d.setDate(d.getDate() - 7);
+  else if (period === 'month') d.setDate(d.getDate() - 30);
+  else if (period === 'year') d.setDate(d.getDate() - 365);
+  else return '2020-01-01';
+  return d.toISOString().slice(0, 10);
+}
+
+// Statistiques via l'API GoatCounter (données à jour, pas le cache 4 h des compteurs publics).
+const _statsCache = {}, _statsTime = {};
+async function gcStats(period, nocache) {
+  const code = getGoatcounter(); const token = getGCToken();
   if (!code) return { ok: false, reason: 'config' };
+  if (!token) return { ok: false, reason: 'token' };
   const key = period || 'all'; const now = Date.now();
-  if (_pagesCache[key] && now - _pagesCacheTime[key] < 120000) return _pagesCache[key];
-  const q = period ? `?start=${encodeURIComponent(period)}` : '';
-  const base = `https://${code}.goatcounter.com/counter/`;
-  const rows = await Promise.all(paths.map(async p => {
+  if (!nocache && _statsCache[key] && now - _statsTime[key] < 60000) return _statsCache[key];
+  const start = periodStart(period);
+  let data;
+  try {
+    const c = new AbortController(); const t = setTimeout(() => c.abort(), 12000);
+    const r = await fetch(`https://${code}.goatcounter.com/api/v0/stats/hits?start=${start}&daily=true&limit=100`,
+      { headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, signal: c.signal });
+    clearTimeout(t);
+    if (r.status === 401 || r.status === 403) { const e = await r.json().catch(() => ({})); return { ok: false, reason: 'token', message: e.error || e.Error || 'clé refusée' }; }
+    data = await r.json();
+  } catch (e) { return { ok: false, reason: 'error', message: e.message }; }
+  if (!data || !data.hits) return { ok: false, reason: 'error', message: (data && data.error) || 'réponse inattendue' };
+
+  const projects = getProjectSlugs();
+  const labelFor = p => { if (p === '/') return 'Accueil'; if (p === '/about') return 'À propos'; const pr = projects.find(x => '/' + x.slug === p); return pr ? (pr.title || pr.slug) : p.replace(/^\//, ''); };
+  const colorFor = p => { if (p === '/') return '#ffffff'; if (p === '/about') return '#9aa0a6'; const s = p.replace(/^\//, ''); return PROJECT_COLORS[s] || hashColor(s); };
+
+  let minDay = null;
+  const pages = data.hits.map(h => {
+    const byDay = {}; let cnt = 0;
+    (h.stats || []).forEach(s => { const v = s.daily || 0; byDay[s.day] = v; cnt += v; if (v > 0 && (!minDay || s.day < minDay)) minDay = s.day; });
+    return { path: h.path, label: labelFor(h.path), color: colorFor(h.path), count: (h.count != null ? h.count : cnt), byDay };
+  });
+
+  const today = new Date().toISOString().slice(0, 10);
+  const days = []; const cur = new Date((minDay || start) + 'T00:00:00');
+  while (cur.toISOString().slice(0, 10) <= today && days.length < 400) { days.push(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
+
+  const total = pages.reduce((a, p) => a + (p.count || 0), 0);
+  const result = { ok: true, total, days, pages: pages.sort((a, b) => b.count - a.count) };
+  _statsCache[key] = result; _statsTime[key] = now; return result;
+}
+
+// Répartitions (référents, navigateurs, systèmes, pays, langues, tailles) via l'API.
+const _extraCache = {}, _extraTime = {};
+async function gcExtra(period, nocache) {
+  const code = getGoatcounter(); const token = getGCToken();
+  if (!code || !token) return { ok: false };
+  const key = period || 'all'; const now = Date.now();
+  if (!nocache && _extraCache[key] && now - _extraTime[key] < 60000) return _extraCache[key];
+  const start = periodStart(period);
+  const one = async pg => {
     try {
-      const c = new AbortController(); const t = setTimeout(() => c.abort(), 6000);
-      const r = await fetch(base + encodeURIComponent(p.path) + '.json' + q, { signal: c.signal }); clearTimeout(t);
-      if (r.status === 404) return { ...p, count: 0 };
-      if (!r.ok) return { ...p, count: null };
+      const c = new AbortController(); const t = setTimeout(() => c.abort(), 12000);
+      const r = await fetch(`https://${code}.goatcounter.com/api/v0/stats/${pg}?start=${start}&limit=8`,
+        { headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, signal: c.signal });
+      clearTimeout(t);
+      if (!r.ok) return [];
       const d = await r.json();
-      return { ...p, count: parseInt(String(d.count || '0').replace(/[^\d]/g, ''), 10) || 0 };
-    } catch { return { ...p, count: null }; }
-  }));
-  const anyData = rows.some(r => r.count !== null);
-  const result = anyData
-    ? { ok: true, rows: rows.map(r => ({ ...r, count: r.count || 0 })).sort((a, b) => b.count - a.count) }
-    : { ok: false, reason: 'disabled' };
-  _pagesCache[key] = result; _pagesCacheTime[key] = now; return result;
+      return (d.stats || []).map(s => ({ name: s.name || s.id || '(inconnu)', count: s.count || 0 }));
+    } catch { return []; }
+  };
+  const out = { ok: true };
+  await Promise.all(BD.map(async ([pg]) => { out[pg] = await one(pg); }));
+  _extraCache[key] = out; _extraTime[key] = now; return out;
 }
 
 function json(res, data) {
@@ -264,29 +336,22 @@ function handleAPI(pathname, params, res) {
     return getMediaSizes(vids.map(v => v.url)).then(sizes => json(res, { ok: true, sizes }));
   }
 
-  if (pathname === '/api/traffic') {
-    const code = getGoatcounter();
-    if (!code) return json(res, { ok: false, message: 'non configuré' });
-    const period = params.get('period') || '';
-    const q = period ? `?start=${encodeURIComponent(period)}` : '';
-    return fetch(`https://${code}.goatcounter.com/counter/TOTAL.json${q}`)
-      .then(r => r.json())
-      .then(d => json(res, { ok: true, count: d.count }))
-      .catch(e => json(res, { ok: false, message: e.message }));
+  if (pathname === '/api/gc-stats') {
+    return gcStats(params.get('period') || '', params.get('nocache') === '1').then(r => json(res, r));
   }
 
-  if (pathname === '/api/pages-traffic') {
-    const projects = getProjectSlugs();
-    const pageNames = readPages().map(p => p.name.replace(/\.astro$/, ''));
-    const known = new Set(['index', 'about', ...projects.map(p => p.slug)]);
-    const hidden = pageNames.filter(n => !known.has(n));
-    const paths = [
-      { path: '/', label: 'Accueil' },
-      ...projects.map(p => ({ path: '/' + p.slug, label: p.title || p.slug })),
-      { path: '/about', label: 'À propos' },
-      ...hidden.map(h => ({ path: '/' + h, label: h })),
-    ];
-    return getPagesTraffic(paths, params.get('period') || '').then(r => json(res, r));
+  if (pathname === '/api/gc-extra') {
+    return gcExtra(params.get('period') || '', params.get('nocache') === '1').then(r => json(res, r));
+  }
+
+  if (pathname === '/api/gc-token') {
+    const t = (params.get('token') || '').trim();
+    if (!t) return json(res, { ok: false, message: 'Token vide.' });
+    try {
+      writeFileSync(join(ROOT, 'dashboard', 'secret.json'), JSON.stringify({ token: t }, null, 2));
+      for (const k in _statsCache) delete _statsCache[k];
+      return json(res, { ok: true, message: 'API GoatCounter connectée.' });
+    } catch (e) { return json(res, { ok: false, message: e.message }); }
   }
 
   if (pathname === '/api/perf') {
@@ -417,6 +482,7 @@ function page() {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>franckchabin.com — Tableau de bord</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -540,6 +606,33 @@ function page() {
   .ptraf-bar{height:100%;background:var(--accent);border-radius:7px;min-width:2px;transition:width .4s}
   .ptraf-num{font-size:.85rem;font-weight:600;text-align:right}
   @media(max-width:560px){.ptraf-row{grid-template-columns:120px 1fr 46px}}
+  .stats-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .chart-wrap{background:#16161a;border-radius:13px;padding:14px;height:360px}
+  .bd-list .bd-row:first-child{padding-top:0}
+
+  /* Répartitions */
+  .bdgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .bd-row{display:grid;grid-template-columns:1fr 64px 30px;align-items:center;gap:9px;padding:5px 0;font-size:.8rem}
+  .bd-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bd-bar{height:8px;background:var(--bg);border-radius:5px;overflow:hidden}
+  .bd-bar span{display:block;height:100%;background:var(--accent);border-radius:5px}
+  .bd-num{text-align:right;font-weight:600;color:var(--muted)}
+  @media(max-width:900px){.bdgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.bdgrid{grid-template-columns:1fr}}
+
+  /* Arbre des pages (graphique) */
+  .tnode2{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;font-size:.88rem}
+  .tnode2:hover{background:var(--bg)}
+  .troot2{font-weight:650;font-size:.98rem;background:var(--bg);margin-bottom:4px}
+  .tbranch{margin-left:15px;padding-left:18px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:1px}
+  .tgroup{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin:12px 0 3px 12px;display:flex;align-items:center;gap:8px}
+  .tdot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px var(--card)}
+  .tlabel{font-weight:600}
+  .tnode2 code{font-family:'SF Mono',Menlo,monospace;font-size:.7rem;color:var(--muted);background:var(--bg);padding:1px 6px;border-radius:5px}
+  .tnode2:hover code{background:var(--card)}
+  .tlinks{margin-left:auto;display:flex;gap:4px}
+  .tcount{font-size:.64rem;background:var(--accent);color:var(--accent-ink);padding:1px 7px;border-radius:20px;font-weight:700}
+  .tmuted{font-size:.66rem;color:var(--muted);font-style:italic;text-transform:none;letter-spacing:0}
 
   /* Favicon */
   .favrow{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
@@ -675,22 +768,57 @@ function page() {
       : `<div class="preview-empty">Lance « Site local (test) » ci-dessus pour voir le site en direct ici, et clique sur un projet pour l'ouvrir dans cet aperçu.</div>`}
   </section>
 
+  <!-- STATISTIQUES DE VISITE -->
+  <div class="sect-h">Statistiques de visite</div>
+  <section class="panel">
+    <div class="panel-head"><h3>Visites</h3>
+      <span class="ph-actions">
+        <span class="link" onclick="refreshStats()">${IC.refresh} Rafraîchir</span>
+        <span class="link" onclick="openModal('token-modal')">Connecter l'API</span>
+        ${gc ? `<a class="link" href="https://${esc(gc)}.goatcounter.com" target="_blank">GoatCounter ${IC.ext}</a>` : ''}
+      </span>
+    </div>
+    <div class="stats-toolbar">
+      <div id="gc-count" class="gc-count"><p class="empty">Chargement…</p></div>
+      <div class="seg" id="period-seg">
+        <button class="seg-btn" data-p="week" onclick="setPeriod('week')">Semaine</button>
+        <button class="seg-btn" data-p="month" onclick="setPeriod('month')">Mois</button>
+        <button class="seg-btn" data-p="year" onclick="setPeriod('year')">Année</button>
+        <button class="seg-btn active" data-p="" onclick="setPeriod('')">Tout</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>Pages</h3>
+      <div class="seg" id="view-seg">
+        <button class="seg-btn active" data-v="bars" onclick="setView('bars')">Classement</button>
+        <button class="seg-btn" data-v="chart" onclick="setView('chart')">Graphique</button>
+      </div>
+    </div>
+    <div id="bars-view"><p class="empty">Chargement…</p></div>
+    <div id="chart-view" style="display:none"><div class="chart-wrap"><canvas id="gc-chart"></canvas></div></div>
+  </section>
+
+  <section class="bdgrid">
+    ${BD.map(([k, title]) => `<div class="panel"><div class="panel-head"><h3>${title}</h3></div><div class="bd-list" id="bd-${k}"><p class="empty">…</p></div></div>`).join('')}
+  </section>
+
   <!-- PLAN DU SITE -->
   <div class="sect-h">Plan du site</div>
   <section class="panel">
-    <div class="panel-head"><h3>Arbre des pages</h3></div>
-    <ul class="tree">
-      <li><div class="tnode troot">Accueil <code>/</code> ${pageLinks('', devRunning)}</div>
-        <ul>
-          <li><div class="tnode tcat">Projets <span class="tcount">${projects.length}</span></div>
-            <ul>${projects.map(p => `<li><div class="tnode">${esc(p.title)} <code>/${esc(p.slug)}</code> ${pageLinks(p.slug, devRunning)}</div></li>`).join('')}</ul>
-          </li>
-          <li><div class="tnode">À propos <code>/about</code> ${pageLinks('about', devRunning)}</div></li>
-          ${hidden.length ? `<li><div class="tnode tcat">Pages cachées <span class="tmuted">hors navigation</span></div>
-            <ul>${hidden.map(h => `<li><div class="tnode">${esc(h)} <code>/${esc(h)}</code> ${pageLinks(h, devRunning)}</div></li>`).join('')}</ul></li>` : ''}
-        </ul>
-      </li>
-    </ul>
+    <div class="panel-head"><h3>Arbre des pages</h3><span class="link">${pageNames.length} pages</span></div>
+    <div class="tree2">
+      <div class="tnode2 troot2"><span class="tdot" style="background:#111"></span><span class="tlabel">Accueil</span><code>/</code><span class="tlinks">${pageLinks('', devRunning)}</span></div>
+      <div class="tbranch">
+        <div class="tgroup">Projets <span class="tcount">${projects.length}</span></div>
+        ${projects.map(p => `<div class="tnode2"><span class="tdot" style="background:${PROJECT_COLORS[p.slug] || hashColor(p.slug)}"></span><span class="tlabel">${esc(p.title)}</span><code>/${esc(p.slug)}</code><span class="tlinks">${pageLinks(p.slug, devRunning)}</span></div>`).join('')}
+        <div class="tgroup">Autre</div>
+        <div class="tnode2"><span class="tdot" style="background:#9aa0a6"></span><span class="tlabel">À propos</span><code>/about</code><span class="tlinks">${pageLinks('about', devRunning)}</span></div>
+        ${hidden.length ? `<div class="tgroup">Pages cachées <span class="tmuted">hors navigation</span></div>
+        ${hidden.map(h => `<div class="tnode2"><span class="tdot" style="background:#6b7280"></span><span class="tlabel">${esc(h)}</span><code>/${esc(h)}</code><span class="tlinks">${pageLinks(h, devRunning)}</span></div>`).join('')}` : ''}
+      </div>
+    </div>
   </section>
 
   <!-- PROJETS -->
@@ -712,48 +840,17 @@ function page() {
     </div>
   </section>` : ''}
 
-  <!-- PERFORMANCE & TRAFIC -->
-  <div class="sect-h">Performance &amp; trafic</div>
-  <section class="cols">
-    <div class="panel" id="perf-panel">
-      <div class="panel-head"><h3>Performance</h3><span class="link" onclick="runPerf()">Analyser</span></div>
-      <div class="perf-static">
-        <span>Poids /public <b>${site.publicSize}</b></span>
-        <span>Images <b>${site.images}</b></span>
-        <span>Vidéos <b>${site.videos}</b></span>
-        <span>Plus gros fichier <b>${heavy[0] ? heavy[0].size : '—'}</b></span>
-      </div>
-      <div id="perf-scores"><p class="empty">Clique sur « Analyser » pour mesurer la vitesse réelle du site en ligne (mobile, via Google). ~20 s.</p></div>
+  <!-- PERFORMANCE -->
+  <div class="sect-h">Performance</div>
+  <section class="panel" id="perf-panel">
+    <div class="panel-head"><h3>Vitesse du site</h3><span class="link" onclick="runPerf()">Analyser</span></div>
+    <div class="perf-static">
+      <span>Poids /public <b>${site.publicSize}</b></span>
+      <span>Images <b>${site.images}</b></span>
+      <span>Vidéos <b>${site.videos}</b></span>
+      <span>Plus gros fichier <b>${heavy[0] ? heavy[0].size : '—'}</b></span>
     </div>
-    <div class="panel">
-      <div class="panel-head"><h3>Trafic &amp; visiteurs</h3></div>
-      ${gc ? `
-        <div id="gc-count" class="gc-count"><p class="empty">Chargement…</p></div>
-        <p class="muted-p">Sans cookie. <b>Aucune IP enregistrée</b> (impossible d'en voir). Ne pas compter tes visites : <a class="link2" onclick="toggleMe()">activer/désactiver ce navigateur</a> (c'est une bascule, re-clique pour réactiver).</p>
-        <a class="link" href="https://${esc(gc)}.goatcounter.com" target="_blank">Détail pays / référents / navigateurs ${IC.ext}</a>
-      ` : `
-        <p class="muted-p">Sans cookie ni bannière de consentement. Pour activer <b>GoatCounter</b> :</p>
-        <ul class="opt-list">
-          <li>Crée un compte gratuit sur <b>goatcounter.com</b> et choisis un « code » (ex : franckchabin).</li>
-          <li>Mets ce code dans <b>src/config.ts</b> → <code>GOATCOUNTER</code>, puis envoie sur GitHub.</li>
-          <li>Le script ne se charge qu'en ligne (jamais en local) ; visiteurs et pays apparaîtront ici.</li>
-        </ul>
-      `}
-    </div>
-  </section>
-
-  <!-- PAGES LES PLUS VISITEES -->
-  <div class="sect-h">Pages les plus visitées</div>
-  <section class="panel">
-    <div class="panel-head"><h3>Classement des pages</h3>
-      <div class="seg" id="period-seg">
-        <button class="seg-btn" data-p="week" onclick="setPeriod('week')">Semaine</button>
-        <button class="seg-btn" data-p="month" onclick="setPeriod('month')">Mois</button>
-        <button class="seg-btn" data-p="year" onclick="setPeriod('year')">Année</button>
-        <button class="seg-btn active" data-p="" onclick="setPeriod('')">Tout</button>
-      </div>
-    </div>
-    <div id="pages-traffic"><p class="empty">Chargement…</p></div>
+    <div id="perf-scores"><p class="empty">Clique sur « Analyser » pour mesurer la vitesse réelle du site en ligne (mobile, via Google). ~20 s.</p></div>
   </section>
 
   <!-- FAVICON -->
@@ -807,6 +904,13 @@ function page() {
   <div class="btns"><button class="btn" onclick="closeModal('commit-modal')">Annuler</button><button class="btn primary" onclick="doCommit()">Envoyer</button></div>
 </div></div>
 
+<div class="overlay" id="token-modal"><div class="modal">
+  <h2>Connecter l'API GoatCounter</h2>
+  <p class="modal-explain">Pour des chiffres <b>à jour</b> (sans le cache de 4 h) et le graphique. Dans GoatCounter : menu en haut à droite → <b>API</b> → nouvelle clé avec la permission « Read statistics ». Colle-la ici — elle est stockée <b>seulement sur ton Mac</b> (dashboard/secret.json, jamais sur GitHub).</p>
+  <input type="text" id="token-input" placeholder="Clé API GoatCounter">
+  <div class="btns"><button class="btn" onclick="closeModal('token-modal')">Annuler</button><button class="btn primary" onclick="saveToken()">Connecter</button></div>
+</div></div>
+
 <div class="overlay" id="remote-modal"><div class="modal">
   <h2>Adresse du dépôt GitHub</h2>
   <p class="modal-explain">Là où ton site est stocké sur GitHub. À changer seulement si tu crées un nouveau dépôt.</p>
@@ -830,17 +934,29 @@ document.querySelectorAll('.overlay').forEach(el=>el.addEventListener('click',e=
 async function openLocal(){const d=await api('/api/open?url='+encodeURIComponent('${DEV_URL}'));if(!d.ok)toast(d.message,false);}
 function fmtBytes(n){if(!n)return'—';if(n>=1048576)return (n/1048576).toFixed(1)+' Mo';if(n>=1024)return Math.round(n/1024)+' Ko';return n+' o';}
 (async function loadSizes(){const els=document.querySelectorAll('.vsize');if(!els.length)return;try{const r=await fetch('/api/media',{method:'POST'});const d=await r.json();if(!d.ok)return;els.forEach(e=>{e.textContent=fmtBytes(d.sizes[e.dataset.url]);});}catch{}})();
-let _period='';
+let _period='',_view='bars',_stats=null,_chart=null;
+function he(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function periodLabel(p){return p==='week'?'7 derniers jours':p==='month'?'30 derniers jours':p==='year'?'12 derniers mois':'tout';}
-function setPeriod(p){_period=p;document.querySelectorAll('#period-seg .seg-btn').forEach(b=>b.classList.toggle('active',b.dataset.p===p));loadTotal();loadPages();}
-function toggleMe(){window.open('${LIVE_URL}#toggle-goatcounter','_blank');}
-async function loadTotal(){const box=document.getElementById('gc-count');if(!box)return;try{const r=await fetch('/api/traffic?period='+_period,{method:'POST'});const d=await r.json();if(!d.ok){box.innerHTML='<p class="empty">Active « Allow adding visitor counts » dans GoatCounter pour afficher le total.</p>';return;}box.innerHTML='<div class="gc-big">'+(d.count||'0')+'</div><div class="gc-lab">pages vues · '+periodLabel(_period)+'</div>';}catch{box.innerHTML='';}}
-async function loadPages(){const box=document.getElementById('pages-traffic');if(!box)return;box.innerHTML='<p class="empty">Chargement…</p>';try{const r=await fetch('/api/pages-traffic?period='+_period,{method:'POST'});const d=await r.json();
-if(!d.ok){box.innerHTML='<p class="empty">'+(d.reason==='config'?'Configure GoatCounter (src/config.ts) pour voir le classement.':'Active « Allow adding visitor counts on your website » dans GoatCounter, puis attends quelques visites (cache ~4 h).')+'</p>';return;}
-const max=Math.max(1,...d.rows.map(x=>x.count));
-box.innerHTML=d.rows.map(x=>'<div class="ptraf-row"><div class="ptraf-lab">'+x.label+'<code>'+x.path+'</code></div><div class="ptraf-track"><div class="ptraf-bar" style="width:'+Math.round(x.count/max*100)+'%"></div></div><div class="ptraf-num">'+x.count+'</div></div>').join('');
-}catch(e){box.innerHTML='<p class="empty">Erreur : '+e.message+'</p>';}}
-loadTotal();loadPages();
+function segActive(id,attr,val){document.querySelectorAll('#'+id+' .seg-btn').forEach(b=>b.classList.toggle('active',b.dataset[attr]===val));}
+function setPeriod(p){_period=p;segActive('period-seg','p',p);loadStats();loadExtra();}
+function setView(v){_view=v;segActive('view-seg','v',v);render();}
+function refreshStats(){loadStats(true);loadExtra(true);}
+async function saveToken(){const t=document.getElementById('token-input').value.trim();if(!t){toast('Colle la clé API.',false);return;}closeModal('token-modal');const d=await api('/api/gc-token?token='+encodeURIComponent(t));toast(d.message,d.ok);if(d.ok)loadStats();}
+function statsMsg(){if(!_stats)return '…';if(_stats.reason==='config')return 'Configure GoatCounter dans src/config.ts.';if(_stats.reason==='token')return "Connecte l'API GoatCounter (bouton « Connecter l'API ») pour des chiffres à jour et le graphique."+(_stats.message?' ('+_stats.message+')':'');return 'Données indisponibles'+(_stats.message?' : '+_stats.message:'')+'.';}
+async function loadStats(nocache){const bars=document.getElementById('bars-view');if(bars)bars.innerHTML='<p class="empty">Chargement…</p>';try{const r=await fetch('/api/gc-stats?period='+_period+(nocache?'&nocache=1':''),{method:'POST'});_stats=await r.json();}catch(e){_stats={ok:false,reason:'error',message:e.message};}updateTotal();render();}
+async function loadExtra(nocache){const keys=['toprefs','browsers','systems','locations','languages','sizes'];keys.forEach(k=>{const b=document.getElementById('bd-'+k);if(b)b.innerHTML='<p class="empty">…</p>';});try{const r=await fetch('/api/gc-extra?period='+_period+(nocache?'&nocache=1':''),{method:'POST'});const d=await r.json();keys.forEach(k=>renderBd(k,d&&d.ok?d[k]:null));}catch{keys.forEach(k=>renderBd(k,null));}}
+function renderBd(key,items){const box=document.getElementById('bd-'+key);if(!box)return;if(!items||!items.length){box.innerHTML='<p class="empty">—</p>';return;}const max=Math.max(1,...items.map(i=>i.count));box.innerHTML=items.map(i=>'<div class="bd-row"><span class="bd-name">'+he(i.name)+'</span><span class="bd-bar"><span style="width:'+Math.round(i.count/max*100)+'%"></span></span><span class="bd-num">'+i.count+'</span></div>').join('');}
+function updateTotal(){const box=document.getElementById('gc-count');if(!box)return;if(_stats&&_stats.ok){box.innerHTML='<div class="gc-big">'+(_stats.total||0)+'</div><div class="gc-lab">pages vues · '+periodLabel(_period)+'</div>';}else{box.innerHTML='<p class="empty">'+statsMsg()+'</p>';}}
+function render(){const bars=document.getElementById('bars-view'),chart=document.getElementById('chart-view');if(!bars||!chart)return;
+if(!_stats||!_stats.ok){bars.style.display='';chart.style.display='none';bars.innerHTML='<p class="empty">'+statsMsg()+'</p>';return;}
+if(_view==='chart'){bars.style.display='none';chart.style.display='';renderChart();}else{bars.style.display='';chart.style.display='none';renderBars();}}
+function renderBars(){const bars=document.getElementById('bars-view'),rows=_stats.pages;if(!rows.length){bars.innerHTML='<p class="empty">Aucune vue sur cette période.</p>';return;}const max=Math.max(1,...rows.map(x=>x.count));
+bars.innerHTML=rows.map(x=>'<div class="ptraf-row"><div class="ptraf-lab">'+x.label+'<code>'+x.path+'</code></div><div class="ptraf-track"><div class="ptraf-bar" style="width:'+Math.round(x.count/max*100)+'%;background:'+x.color+'"></div></div><div class="ptraf-num">'+x.count+'</div></div>').join('');}
+function renderChart(){const top=_stats.pages.slice(0,10),days=_stats.days;const ctx=document.getElementById('gc-chart');if(!window.Chart){ctx.parentNode.innerHTML='<p class="empty">Graphique indisponible (Chart.js non chargé — vérifie ta connexion).</p>';return;}
+const ds=top.map(p=>({label:p.label,data:days.map(d=>p.byDay[d]||0),borderColor:p.color,backgroundColor:p.color,tension:.3,borderWidth:2,pointRadius:0,pointHoverRadius:4}));
+if(_chart)_chart.destroy();
+_chart=new Chart(ctx,{type:'line',data:{labels:days,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#ddd',boxWidth:10,usePointStyle:true,font:{size:11}}},tooltip:{}},scales:{x:{ticks:{color:'#888',maxTicksLimit:8,maxRotation:0},grid:{color:'rgba(255,255,255,.06)'}},y:{beginAtZero:true,ticks:{color:'#888',precision:0},grid:{color:'rgba(255,255,255,.06)'}}}}});}
+loadStats();loadExtra();
 function scoreClass(v){return v>=90?'s-good':v>=50?'s-mid':'s-bad';}
 async function runPerf(){const box=document.getElementById('perf-scores');box.innerHTML='<p class="empty">Analyse en cours (~20 s)…</p>';try{const r=await fetch('/api/perf',{method:'POST'});const d=await r.json();if(!d.ok){box.innerHTML='<p class="empty">'+(d.message||'Analyse indisponible.')+'</p>';return;}
 const S=d.scores,M=d.metrics;const cell=(v,l)=>'<div class="score"><div class="score-val '+(v==null?'':scoreClass(v))+'">'+(v==null?'—':v)+'</div><div class="score-lab">'+l+'</div></div>';

@@ -187,8 +187,15 @@ function page() {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     background: #0a0a0a; color: #e0e0e0;
     min-height: 100vh; padding: 2.5rem;
-    max-width: 700px;
+    max-width: 920px;
   }
+
+  /* ── Aperçu du site (iframe live) ── */
+  .preview-wrap {
+    width: 100%; height: 480px; border-radius: 12px; overflow: hidden;
+    border: 1px solid #222; background: #fff;
+  }
+  .preview-frame { width: 100%; height: 100%; border: 0; display: block; }
   a { color: #4ade80; text-decoration: none; }
   a:hover { text-decoration: underline; }
   h1 { font-size: 1.5rem; font-weight: 600; color: #fff; margin-bottom: 0.2rem; }
@@ -349,6 +356,15 @@ function page() {
   </div>
 </div>
 
+<!-- ── Aperçu du site ── -->
+<div class="section">
+  <h3>Aperçu du site</h3>
+  ${devRunning
+    ? `<div class="preview-wrap"><iframe class="preview-frame" src="${DEV_URL}" title="Aperçu du site"></iframe></div>
+       <span class="config-link" onclick="const f=document.querySelector('.preview-frame'); f.src=f.src;">↻ Rafraîchir l'aperçu</span>`
+    : `<p class="explain">Lance le site en local (bouton ci-dessus) pour voir l'aperçu ici.</p>`}
+</div>
+
 <!-- ── Fichiers modifiés ── -->
 <div class="section">
   <h3>Fichiers modifiés</h3>
@@ -495,7 +511,8 @@ const server = createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n  Dashboard → http://localhost:${PORT}\n`);
-  try { execSync(`open http://localhost:${PORT}`); } catch {}
+  // Sous Electron, c'est l'app qui affiche le dashboard → pas d'ouverture navigateur.
+  if (!process.env.FRANCK_ELECTRON) { try { execSync(`open http://localhost:${PORT}`); } catch {} }
 });
 
 process.on('SIGINT', () => { if (devProcess) devProcess.kill(); process.exit(0); });

@@ -369,6 +369,8 @@ const projects = [
       initCornerDance(danceMount, `/3Dboy/perso_rigge.glb?v=${glbV}`, {
         pixelSize: 2,
         tunable: true,                       // ⚙ panneau de réglages (mettre false en prod)
+        outlineColor: '#000000',             // contour noir (au lieu du gris)
+        outlineFill: '#ffffff',              // fond blanc dans l'écart au survol
         // Survol du perso (zone coucou) → le bouton "À propos" se met en hover.
         // Clic dans la zone → navigation vers la page À propos.
         onProximity: (near) => {

@@ -31,14 +31,15 @@ interface Options {
   outlineThickness?: number;// épaisseur du contour par objet (fraction de la taille)
   onProximity?: (near: boolean) => void;  // entrée/sortie de la zone du perso (coucou)
   onZoneClick?: () => void;               // clic dans la zone du perso
+  outlineFill?: string;                   // fond rempli dans l'écart silhouette ↔ contour
   params?: Partial<typeof DEFAULT_P>;  // surcharges de paramètres par instance
 }
 
 /* ── Paramètres par défaut (copiés par instance) ── */
 const DEFAULT_P = {
   sizeMul:     0.8,         // multiplicateur de taille
-  facingY:    -18,          // orientation de base (degrés)
-  armDown:     0.67,        // inclinaison des bras le long du corps
+  facingY:     10,          // orientation de base (degrés)
+  armDown:     0.83,        // inclinaison des bras le long du corps
   headTilt:    0,           // penché avant de la tête (regard légèrement bas)
   headMax:     20,          // angle max de la tête avant que le CORPS tourne (°)
   turnLine:    0.76,        // position verticale de la jonction front/derrière
@@ -47,12 +48,12 @@ const DEFAULT_P = {
   waveRadius:  200,         // rayon de déclenchement du coucou (px)
   waveRaise:   0.50,        // angle du bras de coucou (plus petit = rentre moins dans la tête)
   pointEnabled: true,       // baguette levée (bras droit)
-  pointRaise:  0.55,        // hauteur du bras baguette
-  pointSide:   0.30,        // penché latéral du bras baguette
+  pointRaise:  0.85,        // hauteur du bras baguette
+  pointSide:   1.20,        // penché latéral du bras baguette
   idleAmount:  1.0,         // intensité des mouvements idle (respiration, balancement)
   pixelSize:   2,           // taille des pixels
-  ambient:     1.55,        // lumière ambiante
-  fresnel:     0.30,        // intensité rim light / fresnel
+  ambient:     2.3,         // lumière ambiante
+  fresnel:     0.20,        // intensité rim light / fresnel
 };
 type Params = typeof DEFAULT_P;
 
@@ -65,7 +66,7 @@ const TRACK = {
   up:         0.75,   // amplitude verticale
   depth:      1.60,   // vitesse de passage derrière au-dessus de la ligne
   frontBias:  0.35,   // décalage "devant" (plus petit = retournement plus près de la ligne)
-  bodySmooth: 0.12,   // lissage de la rotation du corps (plus grand = suit mieux la tête)
+  bodySmooth: 0.22,   // lissage de la rotation du corps (plus grand = suit mieux la tête)
 };
 
 /* ── Réglages fixes de l'idle ── */
@@ -115,8 +116,8 @@ const BORED = {
   delay:         1000,  // ms d'inactivité avant de s'ennuyer
   blendSpeed:    0.012, // entrée très douce (la sortie est rapide)
   glanceInterval: 3.6,  // s entre deux "coups d'œil"
-  ampX:          0.10,  // amplitude regard gauche/droite
-  ampY:          0.04,  // amplitude regard haut/bas
+  ampX:          0.40,  // amplitude regard gauche/droite
+  ampY:          0.13,  // amplitude regard haut/bas
 };
 
 const D2R = Math.PI / 180;
@@ -142,19 +143,26 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
      externe vide), via un filtre SVG (dilatation de l'alpha → anneau). */
   const outlineId = 'dance-outline-' + Math.random().toString(36).slice(2);
   const outlineColor = opts.outlineColor ?? '#b9b9b9';
+  const fillCol = opts.outlineFill;   // fond optionnel dans l'écart (silhouette ↔ anneau)
+  /* Couche de remplissage de l'écart (dilate 6 = silhouette + marge) */
+  const fillLayer = fillCol
+    ? `<feFlood flood-color="${fillCol}" flood-opacity="0" result="ff"/>
+       <feComposite in="ff" in2="inner" operator="in" result="fillc"/>` : '';
+  const fillMerge = fillCol ? '<feMergeNode in="fillc"/>' : '';
   const svgWrap = document.createElement('div');
   svgWrap.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
   svgWrap.innerHTML =
     `<svg><defs><filter id="${outlineId}" x="-50%" y="-50%" width="200%" height="200%">
-      <feMorphology in="SourceAlpha" operator="dilate" radius="9" result="outer"/>
+      <feMorphology in="SourceAlpha" operator="dilate" radius="7.5" result="outer"/>
       <feMorphology in="SourceAlpha" operator="dilate" radius="6" result="inner"/>
       <feComposite in="outer" in2="inner" operator="out" result="ring"/>
-      <feFlood flood-color="${outlineColor}" flood-opacity="0"/>
-      <feComposite in2="ring" operator="in" result="ringc"/>
-      <feMerge><feMergeNode in="ringc"/><feMergeNode in="SourceGraphic"/></feMerge>
+      <feFlood flood-color="${outlineColor}" flood-opacity="0" result="rf"/>
+      <feComposite in="rf" in2="ring" operator="in" result="ringc"/>
+      ${fillLayer}
+      <feMerge>${fillMerge}<feMergeNode in="ringc"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter></defs></svg>`;
   document.body.appendChild(svgWrap);
-  const floodEl = svgWrap.querySelector('feFlood');
+  const floodEls = svgWrap.querySelectorAll('feFlood');
   canvas.style.filter = `${opts.grayscale ? 'grayscale(1) ' : ''}url(#${outlineId})`;
   let outlineOp = 0;                              // opacité animée de l'anneau
 
@@ -376,6 +384,15 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         });
       }
 
+      /* Chaussures argentées (matériau métallique dédié) */
+      const silver = new THREE.MeshStandardMaterial({ color: 0xd2d6dc, metalness: 0.6, roughness: 0.22 });
+      addFresnel(silver);
+      ['SHOES.D', 'SHOES.G'].forEach((n) => {
+        const m = (model!.getObjectByName(n) || model!.getObjectByName(n.replace(/\./g, ''))) as THREE.Mesh | null;
+        if (m && (m as THREE.Mesh).isMesh) m.material = silver;
+      });
+
+
       /* Override des textures embarquées par des PNG externes (modifiables sans
          ré-export). Clé = nom du matériau (Rest_Mat, Clothes_Mat, Face_Mat…). */
       if (opts.externalTextures || opts.skinTextureURL) {
@@ -568,7 +585,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         /* Idle "ennui" : surtout FIXE, avec un coup d'œil de temps en temps.
            Entrée douce, sortie rapide dès qu'on rebouge la souris. */
         const bored = (performance.now() - lastMoveMs) > BORED.delay ? 1 : 0;
-        smoothBored += (bored - smoothBored) * (bored ? BORED.blendSpeed : 0.15);
+        smoothBored += (bored - smoothBored) * (bored ? BORED.blendSpeed : 0.08);
         /* Fade RAPIDE de la baguette (séparé du gaze lent) */
         smoothArm += ((1 - bored) - smoothArm) * ((1 - bored) > smoothArm ? 0.22 : 0.10);
         if (smoothBored > 0.001) {
@@ -594,10 +611,10 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
           targetB = lerp(targetB, 0, smoothBored);   // revient DEVANT même si souris garée derrière
         }
 
-        /* CHILL (footer) : aucune interaction, juste un léger mouvement relax */
+        /* CHILL (footer) : de face, regard quasi droit devant, très léger drift */
         if (opts.chill) {
-          targetX = 0.22 * Math.sin(t * 0.22) + 0.08 * Math.sin(t * 0.07);
-          targetG = -0.04 + 0.10 * Math.sin(t * 0.17 + 1.0);
+          targetX = 0.08 * Math.sin(t * 0.18) + 0.03 * Math.sin(t * 0.07);
+          targetG = -0.02 + 0.05 * Math.sin(t * 0.15 + 1.0);
           targetB = 0;
         }
 
@@ -614,10 +631,10 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         if (!isTouch && inZone !== curInZone) { curInZone = inZone; opts.onProximity?.(inZone); }
         waveDwell = inZone ? waveDwell + dt : 0;
         /* Outline gris : fondu d'opacité 0→1 en ~0,6 s à l'entrée dans la zone */
-        const oStep = dt / 0.6;
         const oTarget = opts.outlineAlways ? 1 : (inZone ? 1 : 0);
+        const oStep = dt / 0.15;   // apparition ET disparition rapides
         outlineOp += Math.max(-oStep, Math.min(oStep, oTarget - outlineOp));
-        if (floodEl) floodEl.setAttribute('flood-opacity', outlineOp.toFixed(3));
+        floodEls.forEach((f) => f.setAttribute('flood-opacity', outlineOp.toFixed(3)));
         if (waveRingEl) {
           waveRingEl.style.display = showGuides ? 'block' : 'none';
           const d = P.waveRadius * 2;
@@ -655,12 +672,16 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
            à VITESSE CONSTANTE (turnEase) → retournement dos→face régulier.
            Hors coucou, suivi réactif. */
         const trackYaw = P.facingY * D2R + bodyYaw;
-        const waving = smoothWave > 0.05;
-        const desiredYaw = waving ? 0 : trackYaw;
-        const turnFactor = waving ? WAVE.turnEase : 0.45;
+        /* Cible ET vitesse mélangées EN CONTINU entre suivi et face-caméra
+           (au lieu d'un seuil dur) → plus de saccade sèche à l'entrée/sortie
+           du coucou. */
+        let dFront = -trackYaw;
+        dFront = Math.atan2(Math.sin(dFront), Math.cos(dFront));        // chemin court vers 0°
+        const desiredYaw = trackYaw + dFront * smoothWave;             // suivi ↔ face caméra
+        const turnFactor = lerp(0.6, WAVE.turnEase, Math.min(1, smoothWave * 4));
         let dStep = desiredYaw - modelYaw;
-        dStep = Math.atan2(Math.sin(dStep), Math.cos(dStep));   // chemin court
-        const yawStep = dStep * turnFactor;                     // rotation appliquée cette frame
+        dStep = Math.atan2(Math.sin(dStep), Math.cos(dStep));          // chemin court
+        const yawStep = dStep * turnFactor;                            // rotation appliquée cette frame
         modelYaw += yawStep;
         const frontErr = Math.atan2(Math.sin(modelYaw), Math.cos(modelYaw));
         const armBlend = smoothWave * Math.max(0, 1 - Math.abs(frontErr) / 0.7);
@@ -716,7 +737,10 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
           basis.makeBasis(fAxis, yAxis, zAxis);
           qDesired.setFromRotationMatrix(basis);
           head.parent.getWorldQuaternion(qParent);
-          head.quaternion.copy(qParent.invert()).multiply(qDesired);
+          qDesired.premultiply(qParent.invert());           // → orientation LOCALE désirée
+          /* Inertie : la tête EASE vers la cible (slerp, chemin court) au lieu de
+             s'y coller → plus de backflip ni de retournement instantané. */
+          head.quaternion.slerp(qDesired, 0.16);
         }
 
         /* ── Baguette pointée vers le curseur (bras droit) — on/off ──

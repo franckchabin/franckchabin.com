@@ -91,7 +91,7 @@ const CFG: Record<string, any> = {
   m_fadeDelay: 0.55, m_fadeDuration: 1.3, m_fadeOpacity: 1,
   m_blur: 79, m_pixel: 100, m_scaleFinal: 0,
   // Mouse simulation — affichage
-  m_showCursor: 1, m_showAmpl: 1,
+  m_showCursor: 1, m_showAmpl: 0,
 
   // Random (mobile)
   x_interval: 300, x_density: 2, x_dispersion: 80,
@@ -782,21 +782,21 @@ function buildDebug() {
       <div class="d-sect-title">Perso 3D</div>
       <div class="d-axis-block d-axis-geo">
         ${sl3d('sizeMul','Taille',0.4,2.2,0.01,0.8)}
-        ${sl3d('facingY','Orientation °',-180,180,1,-18)}
+        ${sl3d('facingY','Orientation °',-180,180,1,10)}
         ${sl3d('pixelSize','Pixelisation',1,12,1,2)}
         ${sl3d('headMax','Tête max °',20,120,1,20)}
         ${sl3d('turnLine','Ligne retourn.',0,1,0.01,0.76)}
-        ${sl3d('armDown','Inclinaison bras',0,1.6,0.01,0.67)}
+        ${sl3d('armDown','Inclinaison bras',0,1.6,0.01,0.83)}
         ${sl3d('idleAmount','Mouvements idle',0,2,0.05,1)}
         ${sl3d('waveRadius','Rayon coucou',40,400,5,200)}
         ${sl3d('waveRaise','Angle bras coucou',0.5,2,0.05,0.5)}
-        ${sl3d('pointRaise','Baguette hauteur',0,2,0.05,0.55)}
-        ${sl3d('pointSide','Baguette penché',-1.2,1.2,0.05,0.3)}
+        ${sl3d('pointRaise','Baguette hauteur',0,2,0.05,0.85)}
+        ${sl3d('pointSide','Baguette penché',-1.2,1.2,0.05,1.2)}
         ${sl3d('headTilt','Penché tête',-0.5,0.9,0.01,0)}
-        ${sl3d('ambient','Lumière',0,3,0.05,1.55)}
-        ${sl3d('fresnel','Fresnel',0,2.5,0.05,0.3)}
+        ${sl3d('ambient','Lumière',0,3,0.05,2.3)}
+        ${sl3d('fresnel','Fresnel',0,2.5,0.05,0.2)}
         ${sl3d('boredDelay','Ennui délai ms',300,8000,100,1000)}
-        ${sl3d('boredAmp','Ennui ampli',0,1.2,0.05,0.1)}
+        ${sl3d('boredAmp','Ennui ampli',0,1.2,0.05,0.4)}
       </div>
       <label class="d-3d-chk"><input type="checkbox" id="d-3d-guides"> Afficher les guides perso</label>
       <button class="d-b d-action-btn" id="d-3d-copy">Copier valeurs perso</button>
@@ -1171,6 +1171,7 @@ function buildDebug() {
   /* ── Sliders ── */
   el.querySelectorAll('input[type=range]').forEach(inp => {
     const input = inp as HTMLInputElement;
+    if (input.dataset.dk) return;          // sliders perso 3D → gérés à part
     const k = input.dataset.k!;
     input.addEventListener('input', () => {
       CFG[k] = parseFloat(input.value);
@@ -1185,15 +1186,10 @@ function buildDebug() {
     });
   });
 
-  /* ── Sliders PERSO 3D (data-dk → window.__DANCE_CTRL) ── */
-  el.querySelectorAll('input[data-dk]').forEach(inp => {
-    const input = inp as HTMLInputElement;
-    const k = input.dataset.dk!;
-    input.addEventListener('input', () => {
-      const v = parseFloat(input.value);
-      const vEl = el.querySelector(`[data-dv="${k}"]`) as HTMLElement;
-      if (vEl) vEl.textContent = input.value;
-      const D = (window as any).__DANCE_CTRL;
+  /* ── Sliders PERSO 3D (data-dk) → s'appliquent à la fenêtre principale ET à
+        l'iframe d'aperçu (sinon ça ne bouge pas tant que le DBG est ouvert) ── */
+  function applyDance(k: string, v: number) {
+    const apply = (D: any) => {
       if (!D) return;
       if (k === 'boredDelay') D.BORED.delay = v;
       else if (k === 'boredAmp') { D.BORED.ampX = v; D.BORED.ampY = v * 0.33; }
@@ -1202,10 +1198,26 @@ function buildDebug() {
       else if (k === 'facingY') D.applyFacing();
       else if (k === 'pixelSize') D.applyPixel();
       else if (k === 'ambient' || k === 'fresnel') D.applyLights();
+    };
+    apply((window as any).__DANCE_CTRL);
+    const iw = vpIframe?.contentWindow as any;
+    if (iw) apply(iw.__DANCE_CTRL);
+  }
+  el.querySelectorAll('input[data-dk]').forEach(inp => {
+    const input = inp as HTMLInputElement;
+    const k = input.dataset.dk!;
+    input.addEventListener('input', () => {
+      const vEl = el.querySelector(`[data-dv="${k}"]`) as HTMLElement;
+      if (vEl) vEl.textContent = input.value;
+      applyDance(k, parseFloat(input.value));
     });
   });
   const g3d = el.querySelector('#d-3d-guides') as HTMLInputElement | null;
-  if (g3d) g3d.addEventListener('change', () => (window as any).__DANCE_CTRL?.setGuides(g3d.checked));
+  if (g3d) g3d.addEventListener('change', () => {
+    (window as any).__DANCE_CTRL?.setGuides(g3d.checked);
+    const iw = vpIframe?.contentWindow as any;
+    iw?.__DANCE_CTRL?.setGuides(g3d.checked);
+  });
   el.querySelector('#d-3d-copy')?.addEventListener('click', () => {
     const D = (window as any).__DANCE_CTRL;
     if (!D) return;

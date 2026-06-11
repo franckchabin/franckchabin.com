@@ -5,6 +5,11 @@ node_modules/
 dist/
 .astro/
 
+# App Dashboard (Electron) — jamais sur GitHub
+*.app/
+franckchabin.app
+dashboard/shell/dist/
+
 # Vidéos (trop lourdes pour GitHub)
 public/videos/
 *.mp4

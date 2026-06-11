@@ -1,5 +1,5 @@
 ---
-import { BASE } from '../config';
+import { BASE, GOATCOUNTER } from '../config';
 /*
   Layout de base — enveloppe toutes les pages
   Inclut : <head>, polices, styles globaux, navigation
@@ -88,6 +88,15 @@ const ogImageUrl = ogImage ? new URL(`${BASE}${ogImage}`, siteUrl).href : new UR
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href={`${BASE}favicon.svg`} />
+
+  <!-- Analytics sans cookie (prod uniquement) -->
+  {GOATCOUNTER && import.meta.env.PROD && (
+    <script
+      data-goatcounter={`https://${GOATCOUNTER}.goatcounter.com/count`}
+      async
+      src="//gc.zgo.at/count.js"
+    />
+  )}
 
   <title>{title}</title>
   <Fragment set:html={`<style>@font-face{font-family:'Maria Unconnected';src:url('${BASE}fonts/maria-unconnected.woff') format('woff');font-weight:normal;font-style:normal;font-display:block;}</style>`} />

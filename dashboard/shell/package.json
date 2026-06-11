@@ -1,0 +1,36 @@
+{
+  "name": "franckchabin-dashboard",
+  "productName": "franckchabin",
+  "version": "1.0.0",
+  "description": "Dashboard franckchabin.com — app de bureau (Electron) avec aperçu du site.",
+  "main": "main.js",
+  "author": "Franck",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.franck.dashboard",
+    "productName": "franckchabin",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dir"
+      ],
+      "icon": "build/icon.png"
+    }
+  }
+}

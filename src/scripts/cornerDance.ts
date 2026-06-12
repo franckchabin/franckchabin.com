@@ -305,7 +305,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
   let smoothWave = 0;    // blend lissé (transitions douces)
 
   let model: THREE.Object3D | null = null;
-  let baseFit = 1, cxFit = 0, czFit = 0, maxYFit = 0, topAnchorY = 0;
+  let baseFit = 1, cxFit = 0, cyFit = 0, czFit = 0, maxYFit = 0, topAnchorY = 0;
   let turnLineEl: HTMLDivElement | null = null;   // ligne de jonction (mode réglage)
   let waveRingEl: HTMLDivElement | null = null;   // cercle du rayon de coucou
   let centerLineEl: HTMLDivElement | null = null; // axe vertical (milieu de fenêtre)
@@ -316,13 +316,23 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
   const clock = new THREE.Clock();
   let t = 0, rafId = 0;
 
+  /* Apparition : scale 0 → 100 % avec une courbe (easeOutBack, léger rebond),
+     centrée sur le milieu du perso. introRaw = progression linéaire 0→1. */
+  let introRaw = 0;
+  const INTRO_DUR = 0.7;   // secondes
+  const easeOutBack = (x: number) => { const c1 = 1.2, c3 = c1 + 1, p = x - 1; return 1 + c3 * p * p * p + c1 * p * p; };
+
   /* ── Application live des paramètres ── */
-  /* Scaling ancré sur le HAUT (la tête reste fixe en réduisant) */
+  /* Échelle pleine ancrée en haut (état final). Pendant l'apparition (introRaw<1)
+     on grandit depuis le CENTRE du perso : le centre reste fixe, et à 100 %
+     l'ancrage redevient identique à l'ancrage haut d'origine. */
   function applySize() {
     if (!model) return;
-    const S = baseFit * P.sizeMul;
+    const Sf = baseFit * P.sizeMul;                                   // échelle pleine
+    const S  = Sf * easeOutBack(Math.max(0, Math.min(1, introRaw)));  // échelle courante
     model.scale.setScalar(S);
-    model.position.set(-cxFit * S, topAnchorY - maxYFit * S, -czFit * S);
+    const centerY = topAnchorY - (maxYFit - cyFit) * Sf;             // Y du centre (constant)
+    model.position.set(-cxFit * S, centerY - cyFit * S, -czFit * S);
   }
   function applyFacing() { if (model) model.rotation.y = P.facingY * D2R; }
   function applyPixel()  { pixelPass.pixelSize = P.pixelSize; pixelPass.setSize(W, H); }
@@ -455,7 +465,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
       const cent = box.getCenter(new THREE.Vector3());
       const maxD = Math.max(size.x, size.y, size.z);
       baseFit = 1.8 / maxD;
-      cxFit = cent.x; czFit = cent.z; maxYFit = box.max.y;
+      cxFit = cent.x; cyFit = cent.y; czFit = cent.z; maxYFit = box.max.y;
       topAnchorY = 0.40 + size.y * baseFit;   // sommet (tête) ancré près du haut (peu de marge)
       applySize();                            // applique échelle + position ancrée en haut
       model.rotation.y = P.facingY * D2R;
@@ -556,6 +566,16 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         const dt = clock.getDelta();
         t += dt * ANIM.speed;
 
+        /* Facteur de lissage INDÉPENDANT du framerate : un coefficient calibré
+           à 60 fps donne le même "temps de réponse" quel que soit le fps réel
+           (anti-saccade/ralenti en mode économie d'énergie). dt borné pour éviter
+           un saut après un onglet en arrière-plan. */
+        const dtn = Math.min(dt, 0.1);
+        const fk = (r: number) => 1 - Math.pow(1 - r, dtn * 60);
+
+        /* Apparition en scale (durée fixe, donc indépendante du fps) */
+        if (introRaw < 1) { introRaw = Math.min(1, introRaw + dt / INTRO_DUR); applySize(); }
+
         const s = Math.sin(t), br = Math.sin(t * 1.3);
 
         /* Mobile : suivre la simulation de souris du trail (mousesim) */
@@ -585,9 +605,9 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         /* Idle "ennui" : surtout FIXE, avec un coup d'œil de temps en temps.
            Entrée douce, sortie rapide dès qu'on rebouge la souris. */
         const bored = (performance.now() - lastMoveMs) > BORED.delay ? 1 : 0;
-        smoothBored += (bored - smoothBored) * (bored ? BORED.blendSpeed : 0.08);
+        smoothBored += (bored - smoothBored) * fk(bored ? BORED.blendSpeed : 0.08);
         /* Fade RAPIDE de la baguette (séparé du gaze lent) */
-        smoothArm += ((1 - bored) - smoothArm) * ((1 - bored) > smoothArm ? 0.22 : 0.10);
+        smoothArm += ((1 - bored) - smoothArm) * fk((1 - bored) > smoothArm ? 0.22 : 0.10);
         if (smoothBored > 0.001) {
           const gi = Math.floor(t / BORED.glanceInterval);
           if (gi !== glanceIdx) {                       // nouveau état
@@ -602,8 +622,8 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
             }
           }
           /* Transition LENTE entre états → plus de coups de tête brusques */
-          glanceCurX += (glanceX - glanceCurX) * 0.025;
-          glanceCurY += (glanceY - glanceCurY) * 0.025;
+          glanceCurX += (glanceX - glanceCurX) * fk(0.025);
+          glanceCurY += (glanceY - glanceCurY) * fk(0.025);
           const bx = glanceCurX + 0.03 * Math.sin(t * 0.5);   // micro-dérive
           const by = glanceCurY + 0.02 * Math.sin(t * 0.7);
           targetX = lerp(targetX, bx, smoothBored);
@@ -618,9 +638,9 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
           targetB = 0;
         }
 
-        smoothX += (targetX - smoothX) * ANIM.headSmooth;
-        smoothY += (targetG - smoothY) * ANIM.headSmooth;
-        smoothB += (targetB - smoothB) * ANIM.headSmooth;
+        smoothX += (targetX - smoothX) * fk(ANIM.headSmooth);
+        smoothY += (targetG - smoothY) * fk(ANIM.headSmooth);
+        smoothB += (targetB - smoothB) * fk(ANIM.headSmooth);
 
         /* ── COUCOU : MAINTENU tant que le curseur reste dans la zone du perso.
            Démarre après WAVE.dwell s de présence, s'arrête en douceur à la sortie
@@ -643,7 +663,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
           waveRingEl.style.top  = (cyC - P.waveRadius) + 'px';
         }
         const waveTarget = (P.waveEnabled && waveDwell >= WAVE.dwell) ? 1 : 0;
-        smoothWave += (waveTarget - smoothWave) * WAVE.blendSpeed;
+        smoothWave += (waveTarget - smoothWave) * fk(WAVE.blendSpeed);
         if (smoothWave > 0.01) waveT += dt; else waveT = 0;   // phase d'oscillation
 
         const nx = smoothX;
@@ -666,7 +686,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         /* Report sur le corps de ce qui dépasse la capacité du cou */
         const headMax = P.headMax * D2R;
         const overflow = az - Math.max(-headMax, Math.min(headMax, az));
-        bodyYaw += (overflow - bodyYaw) * TRACK.bodySmooth;
+        bodyYaw += (overflow - bodyYaw) * fk(TRACK.bodySmooth);
 
         /* Rotation appliquée lissée. Pendant le coucou on vise le DEAD-FRONT (0°)
            à VITESSE CONSTANTE (turnEase) → retournement dos→face régulier.
@@ -678,7 +698,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         let dFront = -trackYaw;
         dFront = Math.atan2(Math.sin(dFront), Math.cos(dFront));        // chemin court vers 0°
         const desiredYaw = trackYaw + dFront * smoothWave;             // suivi ↔ face caméra
-        const turnFactor = lerp(0.6, WAVE.turnEase, Math.min(1, smoothWave * 4));
+        const turnFactor = fk(lerp(0.6, WAVE.turnEase, Math.min(1, smoothWave * 4)));
         let dStep = desiredYaw - modelYaw;
         dStep = Math.atan2(Math.sin(dStep), Math.cos(dStep));          // chemin court
         const yawStep = dStep * turnFactor;                            // rotation appliquée cette frame
@@ -695,7 +715,7 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
         /* Jambes : petite marche quand le CORPS tourne (retournement inclus),
            pilotée par la vitesse de rotation réellement appliquée. */
         const turnSpeed = Math.abs(yawStep);
-        walkAmp  += (Math.min(1, turnSpeed * 55) - walkAmp) * ANIM.walkSmooth;
+        walkAmp  += (Math.min(1, turnSpeed * 55) - walkAmp) * fk(ANIM.walkSmooth);
         walkPhase += dt * ANIM.walkCadence;
         const wp = Math.sin(walkPhase) * walkAmp;
         setBone('Thigh.R',  ANIM.stepAmp * wp, 0, 0);
@@ -740,13 +760,13 @@ export function initCornerDance(mount: HTMLElement, glbPath: string, opts: Optio
           qDesired.premultiply(qParent.invert());           // → orientation LOCALE désirée
           /* Inertie : la tête EASE vers la cible (slerp, chemin court) au lieu de
              s'y coller → plus de backflip ni de retournement instantané. */
-          head.quaternion.slerp(qDesired, 0.16);
+          head.quaternion.slerp(qDesired, fk(0.16));
         }
 
         /* ── Baguette pointée vers le curseur (bras droit) — on/off ──
            Coupé pendant le coucou (le bras droit revient normal). Visée
            PARTIELLE sur l'épaule + COMPLÈTE sur le coude. */
-        smoothPoint += ((P.pointEnabled ? 1 : 0) - smoothPoint) * POINT.blendSpeed;
+        smoothPoint += ((P.pointEnabled ? 1 : 0) - smoothPoint) * fk(POINT.blendSpeed);
         /* Coupé pendant le coucou ET quand le perso s'ennuie (bras revient normal) */
         const effPoint = smoothPoint * Math.max(0, 1 - smoothWave * 2) * smoothArm;
         /* Baguette visible seulement quand le bras est "sorti" (activité/trail) */
